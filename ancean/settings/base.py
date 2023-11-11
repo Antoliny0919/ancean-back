@@ -18,24 +18,23 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-secret_file = os.path.join(BASE_DIR, 'secrets.json')
+SECRETS_FOLDER = os.path.join(Path(__file__).resolve().parent.parent, 'secrets')
 
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
+DJANGO_SECRETS = os.path.join(SECRETS_FOLDER, 'django-secrets.json')
 
-def get_secret(setting, secrets=secrets):
+with open(DJANGO_SECRETS) as f:
+    django_secrets = json.loads(f.read())
+    
+def get_secret(secret, key):
     """Get SECRET_KEY Value or Error"""
     try:
-        return secrets[setting]
+        return secret[key]
     except KeyError:
-        error_msg = f"Set the {setting} environment variable."
+        error_msg = f"None exist {key} environment variable."
         raise ImproperlyConfigured(error_msg)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = get_secret(django_secrets, "SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -132,3 +131,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+OAUTH_SECRETS = os.path.join(SECRETS_FOLDER, 'oauth-secrets.json')
+
+with open(DJANGO_SECRETS) as f:
+    oauth_secrets = json.loads(f.read())
+
+OAUTH_SECRETS_COLLECTION = oauth_secrets
