@@ -1,14 +1,16 @@
 import os
-import json
-from pathlib import Path
-from django.core.exceptions import ImproperlyConfigured
+from django.contrib import admin
+from django.urls import path, include
+# from settings.base import BASE_DIR
 
-SECRETS_FOLDER = os.path.join(Path(__file__).resolve().parent.parent, 'secrets')
+# APP_LIST = [dir for dir in os.listdir(BASE_DIR) if dir.find(".") == -1].remove("ancean")
 
-OAUTH_SECRETS = os.path.join(SECRETS_FOLDER, 'oauth-secrets.json')
 
-with open(OAUTH_SECRETS) as f:
-    oauth_secrets = json.loads(f.read())
-    
-    
-print(oauth_secrets)
+# URL_PATTERNS = [path('api/', include(f'{app}.urls')) for app in APP_LIST].append(path('admin/', admin.site.urls))
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('users.urls')),
+    # path('api/', include('signin.urls')),
+]
