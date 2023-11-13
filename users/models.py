@@ -1,12 +1,9 @@
-from django.apps import apps
 from django.contrib.auth.hashers import make_password
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
 
-# Create your models here.
 
-class UserManager(BaseUserManager):
-  use_in_migrations = True
+class CustomUserManager(UserManager):
 
   def _create_user(self, email, password, **extra_fields):
       """
@@ -18,10 +15,6 @@ class UserManager(BaseUserManager):
       # Lookup the real model class from the global app registry so this
       # manager method can be used in migrations. This is fine because
       # managers are by definition working on the real model.
-      GlobalUserModel = apps.get_model(
-          self.model._meta.app_label, self.model._meta.object_name
-      )
-      username = GlobalUserModel.normalize_username(username)
       user = self.model(email=email, **extra_fields)
       user.password = make_password(password)
       user.save(using=self._db)
@@ -44,15 +37,25 @@ class UserManager(BaseUserManager):
       return self._create_user(email, password, **extra_fields)
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
   
-  objects = UserManager
+  objects = CustomUserManager()
   
   email = models.EmailField(max_length=255, unique=True)
   introduce = models.CharField(max_length=255, null=True)
+  is_staff = models.BooleanField(
+    default=False,
+    help_text=("Designates whether the user can log into this admin site."),
+  )
+  is_active = models.BooleanField(
+    default=True,
+    help_text=(
+        "Designates whether this user should be treated as active. "
+        "Unselect this instead of deleting accounts."
+    ),
+  )
   
   USERNAME_FIELD = 'email'
-  REQUIRED_FIELDS = ['email']
   
   class Meta:
     app_label = 'users'

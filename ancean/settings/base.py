@@ -57,6 +57,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     
     'users',
+    'authentication',
+    'signin',
+    'signup',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +91,18 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = { 
+    'DEFAULT_AUTHENTICATION_CLASSES': (    
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 WSGI_APPLICATION = 'ancean.wsgi.application'
+
+# AUTHENTICATION_BACKENDS = [
+#     'authentication.__init__.CustomUserBackend',
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
 
 
 # Password validation
@@ -180,3 +194,5 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+AUTH_USER_MODEL = 'users.User'

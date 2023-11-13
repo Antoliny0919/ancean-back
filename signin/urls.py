@@ -8,6 +8,6 @@ from . import views
 
 urlpatterns = [
   path('oauth/<str:social>/', views.LoadOAuthSigninView.as_view(), name="load_oauth_signin"),
-  path('token/', TokenObtainPairView.as_view(), name="token_obtain_pair"),
-  path('token/refresh/', TokenRefreshView.as_view(), name="token_refresh"),
+  # path('token/', TokenObtainPairView.as_view(), name="token_obtain_pair"),
+  # path('token/refresh/', TokenRefreshView.as_view(), name="token_refresh"),
 ]
