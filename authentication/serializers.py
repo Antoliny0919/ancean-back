@@ -1,5 +1,6 @@
 from typing import Any, Dict, TypeVar
 from django.conf import settings
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import AbstractBaseUser, update_last_login
 from rest_framework_simplejwt.models import TokenUser
@@ -11,7 +12,6 @@ AuthUser = TypeVar("AuthUser", AbstractBaseUser, TokenUser)
 
 api_settings = getattr(settings, 'SIMPLE_JWT', None)
 
-
 class CustomTokenObtainSerializer(TokenObtainSerializer):
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[Any, Any]:
@@ -19,7 +19,6 @@ class CustomTokenObtainSerializer(TokenObtainSerializer):
             self.username_field: attrs[self.username_field],
             "password": attrs["password"],
         }
-
         self.user = get_object_or_404(User, **authenticate_kwargs)
 
         return {}

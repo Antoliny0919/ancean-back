@@ -1,10 +1,11 @@
 import requests
+from users.models import User
 
 class Oauth:
   redirect_uri = 'http://localhost:5050/api/oauth'
   grant_type = 'authorization_code'
 
-  oauth_data = {
+  oauth_key = {
     'google': {
       'headers': {
         'Content-type': 'application/x-www-form-urlencoded'
@@ -12,7 +13,8 @@ class Oauth:
       'api': {
         'get_token': 'https://oauth2.googleapis.com/token',
         'get_userinfo': 'https://www.googleapis.com/oauth2/v2/userinfo'
-      }
+      },
+      'get_email': ['email']
     },
     'github': {
       'headers': {
@@ -21,7 +23,8 @@ class Oauth:
       'api': {
         'get_token': 'https://github.com/login/oauth/access_token',
         'get_userinfo': 'https://api.github.com/user'
-      }
+      },
+      'get_email': ['email']
     },
     'kakao': {
       'headers': {
@@ -30,7 +33,8 @@ class Oauth:
       'api': {
         'get_token': 'https://kauth.kakao.com/oauth/token',
         'get_userinfo': 'https://kapi.kakao.com/v2/user/me'
-      }
+      },
+      'get_email': ['kakao_account', 'email']
     }
   }
   
@@ -38,11 +42,11 @@ class Oauth:
     self._client_id = client_id
     self._client_secret = client_secret
     self._social = social
-    self._oauth_api = Oauth.oauth_data[social]['api']
+    self._oauth_api = Oauth.oauth_key[social]['api']
     self._code = code
     
   def set_access_token(self):
-    headers = Oauth.oauth_data[self._social]['headers']
+    headers = Oauth.oauth_key[self._social]['headers']
     body = {
       'client_id': self._client_id,
       'client_secret': self._client_secret,
@@ -50,12 +54,14 @@ class Oauth:
       'redirect_uri': f'{Oauth.redirect_uri}/{self._social}',
       'grant_type': Oauth.grant_type
     }
-    
     token = requests.post(self._oauth_api['get_token'], headers=headers, data=body).json()
     self.access_token = token['access_token']
     self.token_type = token['token_type']
     
   def get_user_info(self):
+    '''
+    have access_token 
+    '''
     # must obtain access_token before importing user information
     if not hasattr(self, 'access_token'):
       raise 'access_token is required to obtain user information.'
@@ -65,3 +71,22 @@ class Oauth:
     }).json()
     
     return user
+  
+  def is_already_user(self, oauth_user_data):
+    '''
+    discriminate by oauth email data is already registered(user) user 
+    '''
+    get_email = Oauth.oauth_key[self._social]['get_email']
+    email = oauth_user_data
+    for i in get_email:
+      try:
+        email = email[i]
+      except KeyError:
+        raise 'error'
+    self._oauth_email = email
+    try:
+      User.objects.get(email=self._oauth_email)
+      return True
+      # if client haven't registered yet, redirect sign up page
+    except User.DoesNotExist:
+      return False

@@ -3,8 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from ancean.settings.base import OAUTH_SECRETS_COLLECTION
 from .oauth import Oauth
-
-# Create your views here.
+from users.models import User
 
 class LoadOAuthSigninView(APIView):
   
@@ -14,12 +13,6 @@ class LoadOAuthSigninView(APIView):
     oauth = Oauth(secrets['CLIENT_ID'], secrets['CLIENT_SECRET'], social, code)
     oauth.set_access_token()
     user = oauth.get_user_info()
-    print(user)
+    is_registered = oauth.is_already_user(user)
+    print(is_registered)
     return Response({'hello': '1234'}, status=status.HTTP_200_OK)
-  
-
-class LoadSigninView(APIView):
-  
-  def post(self, request):
-    print(request.data)
-    pass

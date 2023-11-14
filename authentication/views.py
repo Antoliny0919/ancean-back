@@ -1,4 +1,4 @@
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenViewBase
+from rest_framework_simplejwt.views import TokenViewBase
 from .serializers import CustomTokenObtainPairSerializer
 
 # Create your views here.

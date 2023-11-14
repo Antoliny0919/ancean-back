@@ -13,6 +13,5 @@ class TestView(APIView):
   def get(self, request):
     user = User.objects.all()
     serializer = TestSerializer(user, many=True)
-    print(user.password)
     
     return Response(serializer.data, status=status.HTTP_200_OK)
