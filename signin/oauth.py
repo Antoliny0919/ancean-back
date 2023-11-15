@@ -46,6 +46,9 @@ class Oauth:
     self._code = code
     
   def set_access_token(self):
+    '''
+    get access_token and save --> use oauth_api
+    '''
     headers = Oauth.oauth_key[self._social]['headers']
     body = {
       'client_id': self._client_id,
@@ -60,11 +63,13 @@ class Oauth:
     
   def get_user_info(self):
     '''
-    have access_token 
+    access_token is requried to execute this method
+    if have access_token, get user information through it.
     '''
-    # must obtain access_token before importing user information
+    
     if not hasattr(self, 'access_token'):
-      raise 'access_token is required to obtain user information.'
+      raise 'access_token is required to obtain user information. \
+        use "set_access_token" method first to acquire and save the token'
     
     user = requests.get(self._oauth_api['get_userinfo'], headers={
       'Authorization': f'{self.token_type} {self.access_token}'
@@ -72,21 +77,24 @@ class Oauth:
     
     return user
   
-  def is_already_user(self, oauth_user_data):
+  def is_already_registered(self, oauth_user_data):
     '''
-    discriminate by oauth email data is already registered(user) user 
+    get email value from the oauth_user_data dictionary
+    check by oauth email data is already registered(user) user 
     '''
     get_email = Oauth.oauth_key[self._social]['get_email']
     email = oauth_user_data
+    
     for i in get_email:
       try:
         email = email[i]
       except KeyError:
-        raise 'error'
+        raise 'invalid attribute collection get_email for accessing email from the object'
     self._oauth_email = email
+    
     try:
-      User.objects.get(email=self._oauth_email)
-      return True
+      user = User.objects.get(email=self._oauth_email)
+      return user
       # if client haven't registered yet, redirect sign up page
     except User.DoesNotExist:
       return False

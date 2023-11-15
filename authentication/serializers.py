@@ -1,6 +1,5 @@
 from typing import Any, Dict, TypeVar
 from django.conf import settings
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import AbstractBaseUser, update_last_login
 from rest_framework_simplejwt.models import TokenUser
