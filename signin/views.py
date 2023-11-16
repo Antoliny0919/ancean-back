@@ -1,11 +1,8 @@
-from django.conf import settings
-from django.http.response import HttpResponseRedirect
 from rest_framework.views import APIView
-from rest_framework import status
 from rest_framework.response import Response
 from ancean.settings.base import OAUTH_SECRETS_COLLECTION
 from .oauth import Oauth
-from authentication.views import get_token_for_user
+from authentication.views import get_token_for_user, set_token_response
 
 class LoadOAuthSigninView(APIView):
   
@@ -18,8 +15,10 @@ class LoadOAuthSigninView(APIView):
     user = oauth.is_already_registered(user_data)
     if user:
       # is already registered user --> login-enabled status
+      # get access, refresh token and set response header Set-Cookie 
       token = get_token_for_user(user)
-      return HttpResponseRedirect(redirect_to=settings.FRONT_URI)
+      response = set_token_response(**token)
+      return response
     else:
       # haven't registered yer user --> redirect signup
       return Response()
