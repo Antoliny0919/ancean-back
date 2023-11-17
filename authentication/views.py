@@ -2,10 +2,9 @@ import time
 import jwt
 from django.conf import settings
 from django.http.response import HttpResponseRedirect
-from rest_framework import status
+from rest_framework import generics
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from .serializers import CustomTokenObtainPairSerializer
@@ -34,11 +33,30 @@ def set_token_response(**kwargs) -> HttpResponseRedirect:
       response.set_cookie(name, value, max_age=max_age, httponly=True, secure=True)
     else:
       response.set_cookie(name, value, max_age=max_age)
-      
-    
+
   return response
 
 
+class CustomTokenViewBase(generics.GenericAPIView):
+    permission_classes = ()
+    authentication_classes = ()
 
-class CustomTokenObtainPairView(TokenViewBase):
+    serializer_class = None
+    _serializer_class = ""
+
+    www_authenticate_realm = "api"
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        response = set_token_response(**serializer.validated_data)
+        return response
+
+
+class CustomTokenObtainPairView(CustomTokenViewBase):
   serializer_class = CustomTokenObtainPairSerializer
