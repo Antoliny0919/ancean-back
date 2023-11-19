@@ -20,7 +20,7 @@ class CustomTokenObtainSerializer(TokenObtainSerializer):
         }
         self.user = get_object_or_404(User, **authenticate_kwargs)
 
-        return {}
+        return {'user': self.user}
 
     @classmethod
     def get_token(cls, user: AuthUser) -> Token:

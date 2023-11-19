@@ -2,7 +2,7 @@ import requests
 from users.models import User
 
 class Oauth:
-  redirect_uri = 'http://localhost:5050/api/oauth'
+  redirect_uri = 'http://localhost:3030/oauth'
   grant_type = 'authorization_code'
 
   oauth_key = {
@@ -94,7 +94,7 @@ class Oauth:
     
     try:
       user = User.objects.get(email=self._oauth_email)
-      return user
+      return { 'registered': True, 'user': user }
       # if client haven't registered yet, redirect sign up page
     except User.DoesNotExist:
-      return False
+      return { 'registered': False, 'email': self._oauth_email}
