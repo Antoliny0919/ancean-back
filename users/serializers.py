@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     fields = ('email', 'introduce')
     
-class DuplicateEmailSerializer(serializers.Serializer):
+class EmailFieldSerializer(serializers.Serializer):
   
   email = serializers.EmailField(validators=[
     FormatValidator('유효한 이메일 형식이 아닙니다.', r'[a-z0-9_]+@[a-z]+\.[a-z]{2,3}'),

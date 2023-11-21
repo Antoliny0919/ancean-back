@@ -1,9 +1,12 @@
+import random
+from django.core.mail import EmailMessage
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ancean.settings.base import OAUTH_SECRETS_COLLECTION
 from .oauth import Oauth
 from authentication.views import get_token_for_user, login_success_response_jwt
+from users.serializers import EmailFieldSerializer
   
     
 class LoadOAuthSigninView(APIView):
