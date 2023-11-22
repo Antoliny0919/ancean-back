@@ -1,13 +1,30 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.serializers import ValidationError
 from .models import User
 from .validators import FormatValidator
 
 
-class UserSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = User
-    fields = ('email', 'introduce')
+class UserSerializer(serializers.Serializer):
+  
+  email = serializers.EmailField()
+  password1 = serializers.CharField(validators=[
+    FormatValidator('비밀번호는 8자 이상이며 영문 소문자와 특수문자를 최소 한개씩 포함해야합니다.',
+    r'^(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$'
+  )])
+  password2 = serializers.CharField()
+  introduce = serializers.CharField()
+
+  def validate(self, data):
+    password = data['password1']
+    password_check = data['password2']
+    
+    if password != password_check:
+      raise ValidationError('비밀번호가 일치하지 않습니다!', code='invalid')
+  
+    return data
+  
+
     
 class EmailFieldSerializer(serializers.Serializer):
   
