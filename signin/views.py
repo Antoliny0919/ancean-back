@@ -1,12 +1,9 @@
-import random
-from django.core.mail import EmailMessage
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ancean.settings.base import OAUTH_SECRETS_COLLECTION
 from .oauth import Oauth
-from authentication.views import get_token_for_user, login_success_response_jwt
-from users.serializers import EmailFieldSerializer
+from authentication.views import get_token_for_user, success_response_with_jwt
   
     
 class LoadOAuthSigninView(APIView):
@@ -22,7 +19,7 @@ class LoadOAuthSigninView(APIView):
     if user['registered']:
       # is already registered user --> login-enabled status
       token = get_token_for_user(user['user'])
-      response = login_success_response_jwt(user['user'], token)
+      response = success_response_with_jwt(user['user'], token, status.HTTP_200_OK)
 
       return response
     else:

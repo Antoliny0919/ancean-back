@@ -8,12 +8,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from .serializers import CustomTokenObtainPairSerializer
-from users.serializers import UserSerializer
+from users.serializers import UserModelSerializer
 from users.models import User
 
 # Create your views here.
 
-def get_token_for_user(user: Dict[str, str]) -> Dict[str, str]:
+def get_token_for_user(user: User) -> Dict[str, str]:
   '''
   using user data for create access token & refresh token and return
   '''
@@ -31,15 +31,15 @@ def get_expire(token_value: str) -> int:
   payload = jwt.decode(token_value, key=settings.SECRET_KEY, algorithms='HS256')
   return payload['exp']
 
-def login_success_response_jwt(user: User, token: Dict[str, str]) -> Response:
+def success_response_with_jwt(user: User, token: Dict[str, str], status: status) -> Response:
   '''
   serializing user data and jwt token data put dict together and return it
   '''
-  user = UserSerializer(user)
+  user = UserModelSerializer(user)
   token_data = {name: {'value': value, 'exp': get_expire(value)} for name, value in token.items()}
   data = {'token': token_data, 'user': user.data}
   
-  return Response(data, status=status.HTTP_200_OK)
+  return Response(data, status=status)
 
 
 class CustomTokenViewBase(TokenViewBase):
@@ -59,7 +59,7 @@ class CustomTokenViewBase(TokenViewBase):
     
     user = serializer.validated_data['user']
     token = {name: value for name, value in serializer.validated_data.items() if name in ['access', 'refresh']}
-    response = login_success_response_jwt(user, token)
+    response = success_response_with_jwt(user, token)
     
     return response
 
