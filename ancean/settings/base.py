@@ -18,6 +18,8 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+MAIN_DIR = Path(__file__).resolve().parent.parent
+
 SECRETS_FOLDER = os.path.join(Path(__file__).resolve().parent.parent, 'secrets')
 
 DJANGO_SECRETS = os.path.join(SECRETS_FOLDER, 'django-secrets.json')
@@ -61,6 +63,8 @@ INSTALLED_APPS = [
     'signin',
     'signup',
     'posts',
+    'category',
+    'comment',
 ]
 
 MIDDLEWARE = [
@@ -144,6 +148,10 @@ STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(MAIN_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

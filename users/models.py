@@ -40,8 +40,8 @@ class CustomUserManager(UserManager):
 class User(AbstractBaseUser, PermissionsMixin):
   
   objects = CustomUserManager()
-  
   email = models.EmailField(max_length=255, unique=True)
+  name = models.CharField(max_length=20, null=True)
   introduce = models.CharField(max_length=255, null=True)
   is_staff = models.BooleanField(
     default=False,
