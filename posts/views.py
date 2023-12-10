@@ -17,6 +17,3 @@ class PostView(APIView):
     serializer = PostSerializer(posts, many=True, context= {'request' : request})
     return Response(serializer.data, status=status.HTTP_200_OK)
   
-  # def post(self, request):
-    
-    

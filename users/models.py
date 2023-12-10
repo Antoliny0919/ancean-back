@@ -61,4 +61,4 @@ class User(AbstractBaseUser, PermissionsMixin):
     app_label = 'users'
     
   def __str__(self):
-    return self.email
+    return self.name

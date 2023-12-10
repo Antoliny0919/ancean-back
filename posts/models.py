@@ -12,6 +12,8 @@ class Post(models.Model):
   category = models.ForeignKey(Category, on_delete=models.SET_NULL, db_column="category", related_name='post', null=True)
   # wave field like 'like post' on general SNS
   wave = models.IntegerField(default=0)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return f'{self.title} - {self.author}'
