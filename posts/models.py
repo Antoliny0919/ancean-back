@@ -6,16 +6,12 @@ from category.models import Category
 
 class PostManager(models.Manager):  
   
-  def save_post(self, title, **extra_fields):
-
-    return {'hello': 'world'}
-    
-  
-  
   def create_post(self, **fields):
     
     is_finish = fields["is_finish"]
     
+    # Increase the value of the post_count in the category associated with
+    # the post at the time of initial publication
     if is_finish:
       category = fields["category"]
       category.post_count += 1
@@ -47,6 +43,12 @@ class Post(models.Model):
   
   def __str__(self):
     return f'{self.title} - {self.author}'
+  
+  @classmethod
+  def get_all_fields_name(cls):
+    fields = cls._meta.get_fields()
+    fields_name = [field.name for field in fields]
+    return fields_name
     
     
     
