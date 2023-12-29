@@ -14,6 +14,7 @@ from .serializers import PostSerializer, PostCreateSerializer
 class PostFilter(django_filters.FilterSet):
   
   category__name = django_filters.CharFilter(lookup_expr="iexact")
+  is_finish = django_filters.BooleanFilter()
   
 
 class PostView(GenericAPIView, ListModelMixin):
@@ -28,7 +29,6 @@ class PostView(GenericAPIView, ListModelMixin):
   
   def post(self, request):
     body = request.data
-    print(body)
     serializer = PostCreateSerializer(data=body)
     if serializer.is_valid():
       post = serializer.save()

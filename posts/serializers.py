@@ -71,6 +71,8 @@ class PostCreateSerializer(serializers.Serializer):
       if getattr(instance, field_name) != validated_data[field_name]:
         setattr(instance, field_name, validated_data[field_name]) 
     
+    instance.save()
+    
     return instance
     
   
