@@ -10,6 +10,20 @@ POSTGRES_SECRETS = os.path.join(SECRETS_FOLDER, 'postgres-secrets.json')
 
 with open(POSTGRES_SECRETS) as f:
   postgres_secrets = json.loads(f.read())
+  
+MIDDLEWARE = [
+  'django_prometheus.middleware.PrometheusBeforeMiddleware',
+  'corsheaders.middleware.CorsMiddleware',
+  'django.middleware.security.SecurityMiddleware',
+  'django.contrib.sessions.middleware.SessionMiddleware',
+  'django.middleware.common.CommonMiddleware',
+  'django.middleware.csrf.CsrfViewMiddleware',
+  'django.contrib.auth.middleware.AuthenticationMiddleware',
+  'django.contrib.messages.middleware.MessageMiddleware',
+  'django.middleware.clickjacking.XFrameOptionsMiddleware',
+  'django_prometheus.middleware.PrometheusAfterMiddleware',
+]
+
 
 DATABASES = {
   'default': {

@@ -56,8 +56,10 @@ INSTALLED_APPS = [
     
     'corsheaders',
     'django_filters',
+    'django_prometheus',
     'rest_framework',
     'rest_framework_simplejwt',
+    
     
     'users',
     'authentication',

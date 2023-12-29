@@ -1,6 +1,7 @@
 requests
 django
 django-filter
+django-prometheus
 django-cors-headers
 djangorestframework
 djangorestframework-simplejwt

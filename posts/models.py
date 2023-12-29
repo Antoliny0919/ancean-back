@@ -1,4 +1,5 @@
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 from users.models import User
 from category.models import Category
 
@@ -26,7 +27,7 @@ class PostManager(models.Manager):
     return post
 
 
-class Post(models.Model):
+class Post(ExportModelOperationsMixin('post'), models.Model):
   
   objects = PostManager()
   
