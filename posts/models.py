@@ -50,6 +50,6 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
     fields = cls._meta.get_fields()
     fields_name = [field.name for field in fields]
     return fields_name
-    
+  
     
     

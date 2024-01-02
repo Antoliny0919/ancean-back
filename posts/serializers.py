@@ -4,6 +4,7 @@ from rest_framework import serializers
 from users.models import User
 from category.models import Category
 from .models import Post
+from .validators import default_errors_message
 
 class PostSerializer(serializers.ModelSerializer):
   # header_image = serializers.ImageField(use_url=True)
@@ -21,12 +22,10 @@ class PostCreateSerializer(serializers.Serializer):
     "author": User,
     "category": Category,
   }
-  
-  # mutable_fields = ["title, "]
-  
-  title = serializers.CharField()
-  is_finish = serializers.BooleanField()
-  author = serializers.CharField()
+    
+  title = serializers.CharField(error_messages=default_errors_message('제목'))
+  is_finish = serializers.BooleanField(error_messages=default_errors_message('is_finish'))
+  author = serializers.CharField(error_messages=default_errors_message('작성자'))
   category = serializers.CharField(required=False)
   content = serializers.JSONField(required=False)
   
@@ -59,6 +58,7 @@ class PostCreateSerializer(serializers.Serializer):
       raise serializers.ValidationError("Object matching received data does not exist")
     
   def create(self, validated_data):
+    print(validated_data)
     post = Post.objects.create_post(**validated_data)
     return post
 
