@@ -33,6 +33,7 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
   
   header_image = models.ImageField(null=True)
   title = models.CharField(max_length=100)
+  introduce = models.TextField(default='')
   content = models.JSONField('json', default=dict, null=True, blank=True)
   author = models.ForeignKey(User, on_delete=models.CASCADE, db_column="author", related_name='author')
   category = models.ForeignKey(Category, on_delete=models.SET_NULL, db_column="category", related_name='category', null=True, blank=True)
