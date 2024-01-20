@@ -58,8 +58,12 @@ class PostCreateSerializer(serializers.Serializer):
       raise serializers.ValidationError("Object matching received data does not exist")
     
   def create(self, validated_data):
-    print(validated_data)
-    post = Post.objects.create_post(**validated_data)
+    
+    if validated_data["is_finish"]:
+      post = Post.objects.publish_post(**validated_data)
+      return post
+    
+    post = Post.objects.create(**validated_data)
     return post
 
   def update(self, instance, validated_data):
@@ -70,9 +74,12 @@ class PostCreateSerializer(serializers.Serializer):
     for field_name in validated_data.keys():
       if getattr(instance, field_name) != validated_data[field_name]:
         setattr(instance, field_name, validated_data[field_name]) 
+        
+    if validated_data.is_finish:
+      post = Post.objects.publish_post(**validated_data)
+      return post
     
     instance.save()
-    
     return instance
     
   

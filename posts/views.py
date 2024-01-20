@@ -34,6 +34,8 @@ class PostView(GenericAPIView, ListModelMixin):
     serializer = PostCreateSerializer(data=body)
     if serializer.is_valid():
       post = serializer.save()
+      if serializer.data["is_finish"]:
+        return Response({'redirect_path': f'/posts/{post.id}/'}, status=status.HTTP_200_OK)
       return Response({'message': '포스트가 생성되었습니다.', 'id': post.id}, status=status.HTTP_200_OK)
     else:
       return Response({'message': '포스트가 생성에 실패하였습니다.', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -44,14 +46,15 @@ class PostView(GenericAPIView, ListModelMixin):
     existing_post = get_object_or_404(Post, id=post_id)
     serializer = PostCreateSerializer(instance=existing_post, data=body, partial=True)
     if serializer.is_valid():
-      serializer.save()
+      post = serializer.save()
+      if post["is_finish"]:
+        return Response({'redirect_path': f'/posts/{post.id}/', 'id': post.id}, status=status.HTTP_200_OK)
       return Response({'message': '포스트가 임시저장되었습니다.'}, status=status.HTTP_200_OK)
     else:
       return Response({'message': '포스트가 임시저장에 실패하였습니다.','errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
   def delete(self, request):
     body = request.data
-    print(body)
     post_id = body.pop("id")
     post = get_object_or_404(Post, id=post_id)
     post.delete()

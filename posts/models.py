@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django_prometheus.models import ExportModelOperationsMixin
 from users.models import User
 from category.models import Category
@@ -7,7 +8,7 @@ from category.models import Category
 
 class PostManager(models.Manager):  
   
-  def create_post(self, **fields):
+  def publish_post(self, **fields):
     
     is_finish = fields["is_finish"]
     
@@ -17,14 +18,16 @@ class PostManager(models.Manager):
       category = fields["category"]
       category.post_count += 1
       category.save()
-
-    post = self.model(
-      **fields
-    )
+      
+      now = timezone.localtime()
+      post = self.model(
+        created_at=now,
+        **fields,
+      )
     
-    post.save()
-    
-    return post
+      post.save()
+      
+      return post
 
 
 class Post(ExportModelOperationsMixin('post'), models.Model):
@@ -38,7 +41,7 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
   author = models.ForeignKey(User, on_delete=models.CASCADE, db_column="author", related_name='author')
   category = models.ForeignKey(Category, on_delete=models.SET_NULL, db_column="category", related_name='category', null=True, blank=True)
   wave = models.IntegerField(default=0) # wave field like 'like post' on general SNS
-  created_at = models.DateTimeField(auto_now_add=True)
+  created_at = models.DateTimeField(null=True)
   updated_at = models.DateTimeField(auto_now=True)
   is_finish = models.BooleanField(default=False)
   is_public = models.BooleanField(default=False)
