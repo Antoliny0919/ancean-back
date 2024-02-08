@@ -16,4 +16,4 @@ class ImageView(APIView):
       for chunk in image_file.chunks():
         file.write(chunk)
     url = f'http://localhost:5050/media/{image_file.name}'
-    return Response({"success": 1, "file": {"url": url}}, status=status.HTTP_200_OK)
+    return Response({"success": 1, "file": {"url": url, "name": image_file.name}}, status=status.HTTP_200_OK)

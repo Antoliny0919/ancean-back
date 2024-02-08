@@ -25,7 +25,6 @@ WORKDIR /usr/app
 COPY . .
 COPY --from=builder-image usr/app/venv ./venv
 
-ENV FLASK_APP manage
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
