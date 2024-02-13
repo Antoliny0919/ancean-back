@@ -27,6 +27,7 @@ class PostCreateSerializer(serializers.Serializer):
   title = serializers.CharField(error_messages=default_errors_message('제목'))
   is_finish = serializers.BooleanField(error_messages=default_errors_message('is_finish'))
   author = serializers.CharField(error_messages=default_errors_message('작성자'))
+  introduce = serializers.CharField(required=False)
   category = serializers.CharField(required=False)
   content = serializers.JSONField(required=False)
   

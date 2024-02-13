@@ -5,7 +5,7 @@ DEBUG = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-FRONT_URI = 'http://localhost:3030'
+SERVER_URI = 'http://localhost:5050'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

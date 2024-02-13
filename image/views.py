@@ -12,8 +12,9 @@ class ImageView(APIView):
   def post(self, request):
     data = request.data
     image_file = data.get('file')
+    server = getattr(settings, 'SERVER_URI')
     with open(os.path.join(getattr(settings, 'MEDIA_ROOT'), image_file.name), mode='wb') as file:
       for chunk in image_file.chunks():
         file.write(chunk)
-    url = f'http://localhost:5050/media/{image_file.name}'
+    url = f'{server}/media/{image_file.name}'
     return Response({"success": 1, "file": {"url": url, "name": image_file.name}}, status=status.HTTP_200_OK)

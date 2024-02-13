@@ -7,9 +7,12 @@ DEBUG = True
 CORS_ORIGIN_ALLOW_ALL = True
 
 POSTGRES_SECRETS = os.path.join(SECRETS_FOLDER, 'postgres-secrets.json')
+ 
+SERVER_URI = 'http://ancean.net:80'
 
 with open(POSTGRES_SECRETS) as f:
   postgres_secrets = json.loads(f.read())
+
   
 MIDDLEWARE = [
   'django_prometheus.middleware.PrometheusBeforeMiddleware',
@@ -17,8 +20,8 @@ MIDDLEWARE = [
   'django.middleware.security.SecurityMiddleware',
   'django.contrib.sessions.middleware.SessionMiddleware',
   'django.middleware.common.CommonMiddleware',
-  'django.middleware.csrf.CsrfViewMiddleware',
-  'django.contrib.auth.middleware.AuthenticationMiddleware',
+  # 'django.middleware.csrf.CsrfViewMiddleware',
+  # 'django.contrib.auth.middleware.AuthenticationMiddleware',
   'django.contrib.messages.middleware.MessageMiddleware',
   'django.middleware.clickjacking.XFrameOptionsMiddleware',
   'django_prometheus.middleware.PrometheusAfterMiddleware',
