@@ -63,8 +63,6 @@ INSTALLED_APPS = [
     
     'users',
     'authentication',
-    'signin',
-    'signup',
     'posts',
     'category',
     'comment',

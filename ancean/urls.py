@@ -24,9 +24,7 @@ urlpatterns = [
     # django_prometheus url --> urls metrics/
     path('prometheus/', include('django_prometheus.urls')),
     path('api/', include('users.urls')),
-    path('api/', include('signin.urls')),
     path('api/', include('authentication.urls'),),
-    path('api/', include('signup.urls'),),
     path('api/', include('image.urls'),),
     path('api/', include('posts.urls'),),
     path('api/', include('category.urls'),),

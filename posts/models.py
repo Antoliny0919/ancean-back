@@ -6,39 +6,85 @@ from category.models import Category
 
 # Create your models here.
 
-class PostManager(models.Manager):  
+class PostManager(models.Manager):
   
-  def publish_post(self, **fields):
+  def set_related_category(self, category, is_finish, instance_is_finish):
     
-    # Increase the value of the post_count in the category associated with
-    # the post at the time of initial publication
-    if hasattr(fields, 'category'):
-      category = fields['category']
+    if (is_finish and instance_is_finish == None):
       category.post_count += 1
       category.save()
-      
-    now = timezone.localtime()
+      return
+    
+    if (is_finish != bool(instance_is_finish)):
+      if is_finish:
+        category.post_count += 1
+        category.save()
+      else:
+        category.post_count -= 1
+        category.save()
+      return
+
+  def create_post(self, **fields):
+    
+    if (hasattr(fields, 'category') and fields['is_finish']):
+      category, is_finish = fields['category'], fields['is_finish']
+      fields['created_at'] = timezone.localtime()
+      self.set_related_category(category, is_finish, None)
+
     post = self.model(
-      created_at=now,
       **fields,
     )
-  
+    
     post.save()
     
     return post
-
-  def save_publish_post(self, instance, is_finish):
+  
+  def save_post(self, instance, **fields):
     
-    category = getattr(instance, 'category')
-    if category:
-      category.post_count += 1
-      category.save()
+    is_finish, instance_is_finish = fields['is_finish'], getattr(instance, 'is_finish')
     
-    now = timezone.localtime()
-    setattr(instance, 'created_at', now)
+    # if (hasattr(fields, 'category') and is_finish):
+      # frist
+      # if (instance_is_finish != is_finish):
+        
+      # if (not hasattr(instance, 'category')):
+      #   category = fields['category']
+      #   self.set_related_category(category, is_finish, instance_is_finish)
+      # else:
+      #   before_category = instance['category']
+      #   after_category = fields['category']
+      #   before_category.post_count -= 1
+      #   before_category.save()
+      #   after_category.post_count += 1
+      #   after_category.save()
+         
+    
+    if (is_finish and not bool(instance_is_finish)):
+      fields['created_at'] = timezone.localtime()
+    
+    for field_name in fields.keys():
+      if getattr(instance, field_name) != fields[field_name]:
+        setattr(instance, field_name, fields[field_name])
+        
+      
+    
     instance.save()
-    
     return instance
+
+    
+
+  # def save_publish_post(self, instance, is_finish):
+    
+  #   category = getattr(instance, 'category')
+  #   if category:
+  #     category.post_count += 1
+  #     category.save()
+    
+  #   now = timezone.localtime()
+  #   setattr(instance, 'created_at', now)
+  #   instance.save()
+    
+  #   return instance
 
 class Post(ExportModelOperationsMixin('post'), models.Model):
   
