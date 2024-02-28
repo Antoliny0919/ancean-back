@@ -35,9 +35,9 @@ class PostCreateSerializer(serializers.Serializer):
     """
     convert the foreign key to the appropriate object
     """
-
+    
     field = {key: (self.__class__.foreign_fields_table[key]).objects.get(name=value)
-            for key, value in foreign_fields.items()}
+          for key, value in foreign_fields.items()}
 
     return field
   
@@ -61,7 +61,12 @@ class PostCreateSerializer(serializers.Serializer):
     
   def create(self, validated_data):
     
-    post = Post.objects.create_post(**validated_data)
+    is_publish = validated_data["is_finish"]
+    
+    if (is_publish):
+      validated_data = Post.changing_public(instance=None, **validated_data)
+    
+    post = Post.objects.create(**validated_data)
     return post
 
   def update(self, instance, validated_data):
@@ -70,7 +75,25 @@ class PostCreateSerializer(serializers.Serializer):
     existing data and POST body data
     '''
     
-    post = Post.objects.save_post(instance, **validated_data)
-    return post
+    before_state = getattr(instance, "is_finish")
+    after_state = validated_data["is_finish"]
+    print(before_state, after_state)
+    
+    # public
+    if (not before_state and after_state):
+      print('go public')
+      validated_data = Post.changing_public(instance, **validated_data)
+    
+    #private
+    elif (before_state and not after_state):
+      Post.changing_private(instance)
+      
+    for field_name in validated_data.keys():
+      if getattr(instance, field_name) != validated_data[field_name]:
+        setattr(instance, field_name, validated_data[field_name])
+    
+    instance.save()
+      
+    return instance
     
   

@@ -40,7 +40,8 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
       return Response({'message': '포스트가 생성되었습니다.', 'id': post.id}, status=status.HTTP_200_OK)
     else:
       return Response({'message': '포스트가 생성에 실패하였습니다.', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-            
+    
+  
   def patch(self, request):
     body = request.data
     post_id = body.pop("id")
