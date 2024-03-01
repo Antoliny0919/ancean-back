@@ -6,15 +6,14 @@ from category.models import Category
 from .models import Post
 from .validators import default_errors_message
 
-class PostSerializer(serializers.ModelSerializer):
+class PostGetSerializer(serializers.ModelSerializer):
   
-  author = serializers.StringRelatedField()
-  category = serializers.StringRelatedField()
+  author = serializers.ReadOnlyField(source='author.name')
+  category = serializers.ReadOnlyField(source='category.name')
   
   class Meta:
     model = Post
     fields = '__all__'
-    
     
 class PostCreateSerializer(serializers.Serializer):
   
@@ -77,16 +76,15 @@ class PostCreateSerializer(serializers.Serializer):
     
     before_state = getattr(instance, "is_finish")
     after_state = validated_data["is_finish"]
-    print(before_state, after_state)
     
     # public
     if (not before_state and after_state):
-      print('go public')
       validated_data = Post.changing_public(instance, **validated_data)
     
     #private
     elif (before_state and not after_state):
       Post.changing_private(instance)
+    print(validated_data, 'update-validated_data확인')
       
     for field_name in validated_data.keys():
       if getattr(instance, field_name) != validated_data[field_name]:

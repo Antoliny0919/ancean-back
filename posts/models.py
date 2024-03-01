@@ -43,7 +43,8 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
       
     # none exist instance(first generated post)
     # or post that has already been created but is not in the public state set created_at data
-    if (instance == None or not hasattr(instance, 'created_at')):
+    if ((instance == None) or getattr(instance, 'created_at') == None):
+      print(1)
       fields['created_at'] = timezone.localtime()
     
     return fields

@@ -1,13 +1,14 @@
 import django_filters.rest_framework
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework import generics, mixins
+from rest_framework.views import APIView
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from posts.models import Post
 from category.models import Category
-from .serializers import PostSerializer, PostCreateSerializer
+from .serializers import PostGetSerializer, PostCreateSerializer
 
 # Create your views here.
 
@@ -18,16 +19,25 @@ class PostFilter(django_filters.FilterSet):
   id = django_filters.NumberFilter(lookup_expr="exact")
   
 
+class SinglePostView(APIView):
+  
+  def get(self, request, post_id):
+    
+    post = get_object_or_404(Post,id=post_id)
+    serializer = PostGetSerializer(post)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+  
+
 class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   queryset = Post.objects.all()
   model = Post
-  serializer_class = PostSerializer
+  serializer_class = PostGetSerializer
   filter_backends = [django_filters.rest_framework.DjangoFilterBackend, OrderingFilter]
   filterset_class = PostFilter
   ordering_fields = ['wave', 'created_at']
     
   def get(self, request, *args, **kwargs):
-    return self.list(request)
+      return self.list(request, args, kwargs)
   
   def post(self, request):
     body = request.data
@@ -60,12 +70,14 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     body = request.data
     post_id = body.pop("id")
     post = get_object_or_404(Post, id=post_id)
-    post.delete()
+    # is_public = post.is_finish
+    # if (is_public):
+    #     Post.changing_private(post)
+    # post.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
   
-  
 class CategoryPostView(generics.ListAPIView):
-  serializer_class = PostSerializer
+  serializer_class = PostGetSerializer
   filter_backends = [django_filters.rest_framework.DjangoFilterBackend, OrderingFilter]
   filterset_class = PostFilter
   ordering_fields = ['wave', 'created_at']
