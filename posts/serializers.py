@@ -48,15 +48,12 @@ class PostCreateSerializer(serializers.Serializer):
     fields = data.keys()
     foreign_fields = {field: data[field] for field in fields
                       if field in self.__class__.foreign_fields_table.keys()}
-    try:
-      foreign_objs = self.string_to_foreign_obj(**foreign_fields)
-      for key in foreign_objs.keys():
-        data[key] = foreign_objs[key]
-        
-      return data
     
-    except ObjectDoesNotExist:
-      raise serializers.ValidationError("Object matching received data does not exist")
+    foreign_objs = self.string_to_foreign_obj(**foreign_fields)
+    for key in foreign_objs.keys():
+      data[key] = foreign_objs[key]
+      
+    return data
     
   def create(self, validated_data):
     
@@ -84,7 +81,6 @@ class PostCreateSerializer(serializers.Serializer):
     #private
     elif (before_state and not after_state):
       Post.changing_private(instance)
-    print(validated_data, 'update-validated_data확인')
       
     for field_name in validated_data.keys():
       if getattr(instance, field_name) != validated_data[field_name]:

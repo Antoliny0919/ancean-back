@@ -1,3 +1,4 @@
+import json
 import django_filters.rest_framework
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -17,16 +18,6 @@ class PostFilter(django_filters.FilterSet):
   category__name = django_filters.CharFilter(lookup_expr="iexact")
   is_finish = django_filters.BooleanFilter()
   id = django_filters.NumberFilter(lookup_expr="exact")
-  
-
-class SinglePostView(APIView):
-  
-  def get(self, request, post_id):
-    
-    post = get_object_or_404(Post,id=post_id)
-    serializer = PostGetSerializer(post)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-  
 
 class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   queryset = Post.objects.all()
@@ -37,7 +28,15 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   ordering_fields = ['wave', 'created_at']
     
   def get(self, request, *args, **kwargs):
-      return self.list(request, args, kwargs)
+    
+    have_id_query = request.query_params.get('id')
+    # requester requests a single value if id key exists in query
+    if have_id_query:
+      post = get_object_or_404(Post, **request.query_params.dict())
+      serializer = PostGetSerializer(post)
+      return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return self.list(request, args, kwargs)
   
   def post(self, request):
     body = request.data
@@ -70,10 +69,10 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     body = request.data
     post_id = body.pop("id")
     post = get_object_or_404(Post, id=post_id)
-    # is_public = post.is_finish
-    # if (is_public):
-    #     Post.changing_private(post)
-    # post.delete()
+    # if the post is published, remove the part associated with it first
+    if (post.is_finish):
+        Post.changing_private(post)
+    post.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
   
 class CategoryPostView(generics.ListAPIView):

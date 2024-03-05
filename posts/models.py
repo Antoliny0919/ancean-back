@@ -11,7 +11,7 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
   header_image = models.ImageField(default='ancean-no-header-image.png')
   title = models.CharField(max_length=100)
   introduce = models.TextField(default='')
-  content = models.JSONField('json', default=[{}], null=True, blank=True)
+  content = models.JSONField('json', null=True, blank=True)
   author = models.ForeignKey(User, on_delete=models.CASCADE, db_column="author", related_name='author')
   category = models.ForeignKey(Category, on_delete=models.SET_NULL, db_column="category", related_name='category', null=True, blank=True)
   wave = models.IntegerField(default=0) # wave field like 'like post' on general SNS
@@ -44,7 +44,6 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
     # none exist instance(first generated post)
     # or post that has already been created but is not in the public state set created_at data
     if ((instance == None) or getattr(instance, 'created_at') == None):
-      print(1)
       fields['created_at'] = timezone.localtime()
     
     return fields
@@ -56,7 +55,7 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
     '''
     
     # when a post becomes private, the number of post categories is also decrease
-    if hasattr(instance, 'category'):
+    if getattr(instance, 'category') != None:
       category = getattr(instance, 'category')
       category.post_count -= 1
       category.save()

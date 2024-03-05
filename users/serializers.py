@@ -5,5 +5,5 @@ class UserModelSerializer(serializers.ModelSerializer):
   
   class Meta:
     model = User
-    fields = ("email", "introduce")
+    fields = "__all__"
     

@@ -43,7 +43,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -101,6 +100,13 @@ TEMPLATES = [
 REST_FRAMEWORK = { 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 }
+
+
+AUTHENTICATION_BACKENDS = [
+    # 'authentication.backends.MyBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 
 WSGI_APPLICATION = 'ancean.wsgi.application'
 
