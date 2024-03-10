@@ -1,10 +1,6 @@
-import json
 import django_filters.rest_framework
-from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
-from rest_framework import generics, mixins
+from rest_framework import status, generics, mixins, exceptions
 from rest_framework.views import APIView
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
@@ -44,17 +40,25 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   filterset_class = PostFilter
   ordering_fields = ['wave', 'created_at']
   
+  def permission_denied(self, request, message=None, code=None):
+    """
+    If request is not permitted, determine what kind of exception to raise.
+    """
+    if request.authenticators and not request.successful_authenticator:
+        raise exceptions.NotAuthenticated(detail='로그인이 필요한 서비스입니다. 로그인을 먼저 진행해 주세요!')
+    raise exceptions.PermissionDenied(detail=message, code=code)
+  
   def get_object(self, **kwargs):
     obj = get_object_or_404(self.model, **kwargs)
     self.check_object_permissions(self.request, obj)
     return obj
     
   def get(self, request, *args, **kwargs):
-    
     have_id_query = request.query_params.get('id')
     # requester requests a single value if id key exists in query
     if have_id_query:
-      post = self.get_object(**request.query_params.dict())
+      # post = self.get_object(**request.query_params.dict())
+      post = get_object_or_404(self.model, id=have_id_query)
       serializer = PostGetSerializer(post)
       return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -68,32 +72,32 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
       # is_finish = true --> this post is finally published so redirect corresponding post
       if serializer.data["is_finish"]:
         return Response({'redirect_path': f'/posts/{post.id}/'}, status=status.HTTP_200_OK)
-      return Response({'message': '포스트가 생성되었습니다.', 'id': post.id}, status=status.HTTP_200_OK)
+      return Response({'detail': '포스트가 생성되었습니다.', 'id': post.id}, status=status.HTTP_200_OK)
     else:
-      return Response({'message': '포스트가 생성에 실패하였습니다.', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+      return Response({'detail': '포스트가 생성에 실패하였습니다.', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
   
   def patch(self, request):
     body = request.data
     post_id = body.pop("id")
-    post = self.get_post(self.model, id=post_id)
+    post = self.get_object(id=post_id)
     serializer = PostCreateSerializer(instance=post, data=body, partial=True)
     if serializer.is_valid():
       post = serializer.save()
       # is_finish = true --> this post is already finally published so redirect corresponding post
       if post.__dict__["is_finish"]:
         return Response({'redirect_path': f'/posts/{post.id}/'}, status=status.HTTP_200_OK)
-      return Response({'message': '포스트가 임시저장되었습니다.'}, status=status.HTTP_200_OK)
+      return Response({'detail': '포스트가 임시저장되었습니다.'}, status=status.HTTP_200_OK)
     else:
-      return Response({'message': '포스트가 임시저장에 실패하였습니다.','errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+      return Response({'detail': '포스트가 임시저장에 실패하였습니다.','errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
   def delete(self, request):
     body = request.data
     post_id = body.pop("id")
-    post = self.get_post(self.model, id=post_id)
+    post = self.get_object(id=post_id)
     # if the post is published, remove the part associated with it first
     if (post.is_finish):
-        Post.changing_private(post)
+        self.model.changing_private(post)
     post.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
   
