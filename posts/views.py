@@ -14,6 +14,7 @@ from .serializers import PostGetSerializer, PostCreateSerializer
 class PostFilter(django_filters.FilterSet):
   
   category__name = django_filters.CharFilter(lookup_expr="iexact")
+  author__name = django_filters.CharFilter(lookup_expr="iexact")
   is_finish = django_filters.BooleanFilter()
   id = django_filters.NumberFilter(lookup_expr="exact")
   
