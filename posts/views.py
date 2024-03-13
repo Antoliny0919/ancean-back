@@ -17,20 +17,6 @@ class PostFilter(django_filters.FilterSet):
   author__name = django_filters.CharFilter(lookup_expr="iexact")
   is_finish = django_filters.BooleanFilter()
   id = django_filters.NumberFilter(lookup_expr="exact")
-  
-class TestPostView(APIView):
-  
-  permission_classes = [IsOwnerAndAdmin]
-  
-  def get_object(self, **kwargs):
-    obj = get_object_or_404(self.model, **kwargs)
-    self.check_object_permissions(self.request, obj)
-    return obj
-  
-  def get(self, request):
-    posts = Post.objects.all()
-    serializer = PostGetSerializer(posts, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   queryset = Post.objects.all()
@@ -43,7 +29,7 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   
   def permission_denied(self, request, message=None, code=None):
     """
-    If request is not permitted, determine what kind of exception to raise.
+    if request is not permitted, determine what kind of exception to raise.
     """
     if request.authenticators and not request.successful_authenticator:
         raise exceptions.NotAuthenticated(detail='로그인이 필요한 서비스입니다. 로그인을 먼저 진행해 주세요!')
@@ -55,11 +41,19 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     return obj
     
   def get(self, request, *args, **kwargs):
-    have_id_query = request.query_params.get('id')
-    # requester requests a single value if id key exists in query
-    if have_id_query:
-      # post = self.get_object(**request.query_params.dict())
-      post = get_object_or_404(self.model, id=have_id_query)
+    '''
+    if an id value exists in the query, it is identified as a request for a single value
+    so use PostGetSerializer and parameter many value --> False (return in array form for a definite single value is problematic)
+    '''
+    request_single_post = request.query_params.get('id')
+    if request_single_post:
+      query = {key: value for key, value in request.query_params.items()}
+      post = get_object_or_404(self.model, **query)
+      if request.auth:
+        # when an authenticated user requests a single post --> considered permissions a required request
+        # for example, when a user tries to modify a post, 
+        # the person who tries to modify it and the author of the post must match to get information about that post
+        self.check_object_permissions(self.request, post)
       serializer = PostGetSerializer(post)
       return Response(serializer.data, status=status.HTTP_200_OK)
     
