@@ -1,5 +1,5 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Model
+import os
+from django.conf import settings
 from rest_framework import serializers
 from users.models import User
 from category.models import Category
@@ -63,6 +63,8 @@ class PostCreateSerializer(serializers.Serializer):
       validated_data = Post.changing_public(instance=None, **validated_data)
     
     post = Post.objects.create(**validated_data)
+    # create a folder in the media folder for storing images associated with the created post
+    os.mkdir(f'{settings.MEDIA_ROOT}/{post.author.name}/{post.id}/')
     return post
 
   def update(self, instance, validated_data):

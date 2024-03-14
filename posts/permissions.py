@@ -16,7 +16,8 @@ class IsOwnerAndAdmin(permissions.BasePermission):
     '''
     call via get_object only when requester and object to be fluctuated are associated
     '''
-    self.message = '간단하게 객체와 요청자가 일치하지 않다는 에러'
+    self.message = '해당 포스트에 대한 권한이 존재하지 않습니다.'
+    
     is_owner = request.user == obj.author
     
     return is_owner

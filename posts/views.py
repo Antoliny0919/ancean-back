@@ -1,7 +1,8 @@
+import os
 import django_filters.rest_framework
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status, generics, mixins, exceptions
-from rest_framework.views import APIView
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from posts.models import Post
@@ -93,6 +94,8 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     # if the post is published, remove the part associated with it first
     if (post.is_finish):
         self.model.changing_private(post)
+    # remove the image folder for the post
+    os.rmdir(f'{settings.MEDIA_ROOT}/{post.author.name}/{post.id}')
     post.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
   
