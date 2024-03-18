@@ -37,7 +37,7 @@ class PostCreateSerializer(serializers.Serializer):
     
     field = {key: (self.__class__.foreign_fields_table[key]).objects.get(name=value)
           for key, value in foreign_fields.items()}
-
+      
     return field
   
   def validate(self, data):
