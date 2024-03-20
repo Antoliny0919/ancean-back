@@ -16,39 +16,27 @@ TEST_ADMIN_USER_DATA = {
   'email': 'admin_tester123@gmail.com', 
   '_name': 'admin_tester123', 
   'password': '12345678', 
+  'is_staff': True,
+  'is_superuser': True,
 }
 
-# @pytest.fixture
-# def django_db_setup():
-#   from django.conf import settings
+TEST_POST_DATA = {
+  'title': 'test post title', 
+  'introduce': 'hello world!',
+  'catogory': 'DOCKER',
+  'is_finish': False,
+}
 
-@pytest.fixture
-def common_user(db):
-  user = User.objects.create_user(**TEST_COMMON_USER_DATA)
-  return user
-  
-@pytest.fixture
-def admin_user(db):
-  user = User.objects.create_superuser(**TEST_ADMIN_USER_DATA)
-  return user
-  
-
-@pytest.fixture
-def common_client(common_user):
+@pytest.fixture()
+def client(request, db):
+  user_data = request.param
+  user = User.objects.create_user(**user_data)
   client = APIClient()
-  client.user = common_user
-  refresh = RefreshToken.for_user(common_user)
+  client.user = user
+  refresh = RefreshToken.for_user(user)
   access = str(refresh.access_token)
   client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
-  return client
-
-@pytest.fixture
-def admin_client(admin_user):
-  client = APIClient()
-  refresh = RefreshToken.for_user(admin_user)
-  access = str(refresh.access_token)
-  client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
-  return client
   
+  return client
   
   

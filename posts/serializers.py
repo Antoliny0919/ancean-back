@@ -35,9 +35,9 @@ class PostCreateSerializer(serializers.Serializer):
     convert the foreign key to the appropriate object
     """
     
-    field = {key: (self.__class__.foreign_fields_table[key]).objects.get(name=value)
-          for key, value in foreign_fields.items()}
-      
+    field = {key: (self.__class__.foreign_fields_table[key]).objects.get(_name=value)
+        for key, value in foreign_fields.items()}
+    
     return field
   
   def validate(self, data):
