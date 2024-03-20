@@ -80,7 +80,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     if self._name:
       os.rename(have_personal_image_storage, new_personal_image_storage)
-    else: 
+    elif (not os.path.exists(new_personal_image_storage)): 
       os.mkdir(new_personal_image_storage)
       
     self._name = value
