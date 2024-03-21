@@ -34,12 +34,12 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
     '''
     Post model object incidental processing before becomming public state
     '''
-
     # increase category post_count associated with foreign key when category field exist in validated_data
     if 'category' in fields: 
       category = fields['category']
       category.post_count += 1
       category.save()
+      # print(id(category), 'it is changing_public step')
       
     # none exist instance(first generated post)
     # or post that has already been created but is not in the public state set created_at data

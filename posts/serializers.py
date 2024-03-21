@@ -1,8 +1,7 @@
 import os
 from django.conf import settings
 from rest_framework import serializers
-from users.models import User
-from category.models import Category
+from django.db import models
 from .models import Post
 from .validators import default_errors_message
 
@@ -17,11 +16,6 @@ class PostGetSerializer(serializers.ModelSerializer):
     
 class PostCreateSerializer(serializers.Serializer):
   
-  foreign_fields_table = {
-    "author": User,
-    "category": Category,
-  }
-  
   header_image = serializers.CharField(required=False)
   title = serializers.CharField(error_messages=default_errors_message('제목'))
   is_finish = serializers.BooleanField(error_messages=default_errors_message('is_finish'))
@@ -30,35 +24,46 @@ class PostCreateSerializer(serializers.Serializer):
   category = serializers.CharField(required=False)
   content = serializers.JSONField(required=False)
   
-  def string_to_foreign_obj(self, **foreign_fields):
+  def convert_string_to_foreign_obj(self, **foreign_fields):
     """
     convert the foreign key to the appropriate object
     """
+    converted_foreign_fields = {}
     
-    field = {key: (self.__class__.foreign_fields_table[key]).objects.get(_name=value)
-        for key, value in foreign_fields.items()}
-    
-    return field
+    for key, data in foreign_fields.items():
+      try: 
+        model = data['model']
+        # check field name property have setter 
+        if hasattr(model, '_name'):
+          converted_foreign_fields[key] = model.objects.get(_name=data['value'])
+        else:
+          converted_foreign_fields[key] = model.objects.get(name=data['value'])
+          # print(f'{id(model.objects.get(name=data["value"]))} it is convert_string_to_foreing_obj')
+        
+      except model.DoesNotExists:
+        raise f'{key}에 {data["value"]}는 존재하지 않습니다.'
+  
+    return converted_foreign_fields
   
   def validate(self, data):
     """
     Get fields related to foreign keys from the data
     convert the foreign key to the appropriate object
     """
-    fields = data.keys()
-    foreign_fields = {field: data[field] for field in fields
-                      if field in self.__class__.foreign_fields_table.keys()}
+    foreign_fields = {}
+    for fields in Post._meta.get_fields():
+      if type(fields) == models.ForeignKey:
+        foreign_fields[fields.name] = {'model': fields.related_model, 'value': data[fields.name]}
     
-    foreign_objs = self.string_to_foreign_obj(**foreign_fields)
-    for key in foreign_objs.keys():
-      data[key] = foreign_objs[key]
+    converted_foreign_fields = self.convert_string_to_foreign_obj(**foreign_fields)
+    for key in converted_foreign_fields.keys():
+      data[key] = converted_foreign_fields[key]
       
     return data
     
   def create(self, validated_data):
     
     is_publish = validated_data["is_finish"]
-    
     if (is_publish):
       validated_data = Post.changing_public(instance=None, **validated_data)
     
@@ -80,7 +85,7 @@ class PostCreateSerializer(serializers.Serializer):
     if (not before_state and after_state):
       validated_data = Post.changing_public(instance, **validated_data)
     
-    #private
+    # private
     elif (before_state and not after_state):
       Post.changing_private(instance)
       
