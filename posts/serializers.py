@@ -38,7 +38,6 @@ class PostCreateSerializer(serializers.Serializer):
           converted_foreign_fields[key] = model.objects.get(_name=data['value'])
         else:
           converted_foreign_fields[key] = model.objects.get(name=data['value'])
-          # print(f'{id(model.objects.get(name=data["value"]))} it is convert_string_to_foreing_obj')
         
       except model.DoesNotExists:
         raise f'{key}에 {data["value"]}는 존재하지 않습니다.'
@@ -51,8 +50,10 @@ class PostCreateSerializer(serializers.Serializer):
     convert the foreign key to the appropriate object
     """
     foreign_fields = {}
+    data_fields = data.keys()
+    
     for fields in Post._meta.get_fields():
-      if type(fields) == models.ForeignKey:
+      if type(fields) == models.ForeignKey and fields.name in data_fields:
         foreign_fields[fields.name] = {'model': fields.related_model, 'value': data[fields.name]}
     
     converted_foreign_fields = self.convert_string_to_foreign_obj(**foreign_fields)

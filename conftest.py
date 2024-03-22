@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from category.models import Category
+from posts.models import Post
 
 
 User = get_user_model()
@@ -27,19 +28,9 @@ TEST_ADMIN_USER_DATA = {
 TEST_POST_DATA = {
   'title': 'test post title', 
   'introduce': 'hello world!',
-  'category': 'DJANGO',
   'is_finish': False,
 }
-
-TEST_DB = {
-  'ENGINE': 'django.db.backends.sqlite3',
-  'NAME': os.path.join(getattr(settings, 'BASE_DIR'), 'testdb.sqlite3'),
-}
-
-@pytest.fixture()
-def django_db_setup():
-  settings.DATABASES['default']['test'] = TEST_DB
-
+  
 @pytest.fixture()
 def client(request, db):
   user_data = request.param
@@ -55,9 +46,13 @@ def client(request, db):
   personal_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{client.user.name}')
   shutil.rmtree(personal_image_storage, ignore_errors=True)
   
+@pytest.fixture()
+def post(db):
+  user = User.objects.create_user(**TEST_ADMIN_USER_DATA)
+  TEST_POST_DATA['author'] = user
+  Post.objects.create(**TEST_POST_DATA)
 
 @pytest.fixture()
 def category(db):
-  category = Category.objects.create(name='DJANGO')
-  return category
+  Category.objects.create(name='DJANGO')
   
