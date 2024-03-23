@@ -67,7 +67,7 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
       post = serializer.save()
       # is_finish = true --> this post is finally published so redirect corresponding post
       if serializer.data["is_finish"]:
-        return Response({'redirect_path': f'/posts/{post.id}/'}, status=status.HTTP_201_CREATED)
+        return Response({'redirect_path': f'/posts/{post.id}/', 'id': post.id}, status=status.HTTP_201_CREATED)
       return Response({'detail': '포스트가 생성되었습니다.', 'id': post.id}, status=status.HTTP_201_CREATED)
     else:
       return Response({'detail': '포스트가 생성에 실패하였습니다.', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

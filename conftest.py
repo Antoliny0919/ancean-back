@@ -1,7 +1,4 @@
-import os
 import pytest
-import shutil
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -53,5 +50,5 @@ def post(db):
 
 @pytest.fixture()
 def category(db):
-  Category.objects.create(name='DJANGO')
-  
+  category = Category.objects.create(name='DJANGO')
+  return category
