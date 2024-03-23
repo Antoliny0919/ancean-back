@@ -1,4 +1,5 @@
 import os
+import shutil
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.management.commands import createsuperuser
@@ -38,6 +39,16 @@ class CustomUserManager(UserManager):
           raise ValueError("Superuser must have is_superuser=True.")
 
       return self._create_user(email, _name, password, **extra_fields)
+    
+  def delete_user(self, user):
+    '''
+    delete user logic
+    remove the parts related to the user to be removed as well(image_storage)
+    '''
+    personal_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{user.name}')
+    if os.path.exists(personal_image_storage):
+      shutil.rmtree(personal_image_storage, ignore_errors=True)
+    user.delete()
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -74,6 +85,10 @@ class User(AbstractBaseUser, PermissionsMixin):
   
   @name.setter
   def name(self, value):
+    '''
+    when the user was first created or the name was modified
+    personal image storage change name together or create
+    '''
     
     have_personal_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{self._name}')
     new_personal_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{value}')

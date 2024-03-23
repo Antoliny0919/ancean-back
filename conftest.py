@@ -43,8 +43,7 @@ def client(request, db):
   
   yield client
   #teardown
-  personal_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{client.user.name}')
-  shutil.rmtree(personal_image_storage, ignore_errors=True)
+  User.objects.delete_user(client.user)
   
 @pytest.fixture()
 def post(db):
