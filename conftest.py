@@ -1,4 +1,6 @@
+import copy
 import pytest
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -34,6 +36,7 @@ def client(request, db):
   user = User.objects.create_user(**user_data)
   client = APIClient()
   client.user = user
+  client.endpoint = '/api/posts/'
   refresh = RefreshToken.for_user(user)
   access = str(refresh.access_token)
   client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
@@ -43,12 +46,34 @@ def client(request, db):
   User.objects.delete_user(client.user)
   
 @pytest.fixture()
-def post(db):
+def base_client(body, db):
+  '''
+  
+  '''
   user = User.objects.create_user(**TEST_ADMIN_USER_DATA)
-  TEST_POST_DATA['author'] = user
-  Post.objects.create(**TEST_POST_DATA)
+  client = APIClient()
+  client.user = user
+  client.endpoint = '/api/posts/'
+  refresh = RefreshToken.for_user(user)
+  access = str(refresh.access_token)
+  client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+  
+  body['author'] = client.user.name
+  create_post = client.post(client.endpoint, body)
+  created_post = Post.objects.get(id=create_post.data['id'])
+  client.user.post = created_post
+  
+  yield client
+  
+  User.objects.delete_user(client.user)
+  
 
 @pytest.fixture()
 def category(db):
   category = Category.objects.create(name='DJANGO')
   return category
+
+@pytest.fixture()
+def body():
+  body = copy.deepcopy(TEST_POST_DATA)
+  return body

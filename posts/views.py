@@ -40,6 +40,14 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     obj = get_object_or_404(self.model, **kwargs)
     self.check_object_permissions(self.request, obj)
     return obj
+  
+  def has_id_param(self, body):
+    try:
+      post_id = body.pop('id')
+      return post_id
+  
+    except KeyError:
+      raise exceptions.ParseError('포스트 id를 확인할 수 없습니다.')
     
   def get(self, request, *args, **kwargs):
     '''
@@ -75,13 +83,13 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   
   def patch(self, request):
     body = request.data
-    post_id = body.pop("id")
+    post_id = self.has_id_param(body)
     post = self.get_object(id=post_id)
     serializer = PostCreateSerializer(instance=post, data=body, partial=True)
     if serializer.is_valid():
       post = serializer.save()
       # is_finish = true --> this post is already finally published so redirect corresponding post
-      if post.__dict__["is_finish"]:
+      if post.is_finish:
         return Response({'redirect_path': f'/posts/{post.id}/'}, status=status.HTTP_200_OK)
       return Response({'detail': '포스트가 임시저장되었습니다.'}, status=status.HTTP_200_OK)
     else:
