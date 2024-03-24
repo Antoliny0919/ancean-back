@@ -1,5 +1,7 @@
+import os
+import json
 import pytest
-from django.urls import reverse
+from django.conf import settings
 from rest_framework import status
 from conftest import TEST_COMMON_USER_DATA, TEST_ADMIN_USER_DATA
 from category.models import Category
@@ -13,8 +15,8 @@ def expected_none_is_finish_response(id):
 @pytest.mark.parametrize(
 "client, status_code",
 [
-  pytest.param(TEST_COMMON_USER_DATA, status.HTTP_403_FORBIDDEN),
-  pytest.param(TEST_ADMIN_USER_DATA, status.HTTP_201_CREATED),
+  pytest.param({'user': TEST_COMMON_USER_DATA, 'endpoint': '/api/posts/'}, status.HTTP_403_FORBIDDEN),
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, status.HTTP_201_CREATED),
 ],
 indirect=['client']
 )
@@ -25,15 +27,15 @@ def test_user_create_post(client, status_code, body):
   only admin users can be post-created
   '''
   body['author'] = client.user.name
-  response = client.post(reverse('posts_view'), body)
+  response = client.post(client.endpoint, json.dumps(body), content_type='application/Json')
   assert response.status_code == status_code
     
 
 @pytest.mark.parametrize(
 "client, is_finish, expected_response, post_count", 
 [
-  pytest.param(TEST_ADMIN_USER_DATA, True, expected_is_finish_response, 1),
-  pytest.param(TEST_ADMIN_USER_DATA, False, expected_none_is_finish_response, 0)
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, True, expected_is_finish_response, 1),
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, False, expected_none_is_finish_response, 0)
 ],
 indirect=["client"]
 )
@@ -44,7 +46,7 @@ def test_is_finish_create_post(category, client, is_finish, expected_response, p
   '''
   body['author'], body['is_finish'], body['category'] = client.user.name, is_finish, category.name
   
-  response = client.post(reverse('posts_view'), body)
+  response = client.post(client.endpoint, json.dumps(body), content_type='application/Json')
   assert response.status_code == status.HTTP_201_CREATED
   post_id = response.data['id']
   assert response.data == expected_response(post_id)
@@ -52,5 +54,18 @@ def test_is_finish_create_post(category, client, is_finish, expected_response, p
   category = Category.objects.get(name=check_post.data['category'])
   
   assert category.post_count == post_count
+
+
+@pytest.mark.parametrize("client", [pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'})], indirect=["client"])
+def test_image_storage_create_post(client, body):
+  '''
+  when a post is created, test whether a folder has been created to store the image file for the post
+  '''
+  body['author'] = client.user.name
+  response = client.post(client.endpoint, json.dumps(body), content_type='application/Json')
+  post_id = response.data['id']
+  post_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{client.user.name}/{post_id}')
+  assert os.path.exists(post_image_storage)
+  
   
   

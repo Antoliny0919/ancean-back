@@ -39,7 +39,6 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
       category = fields['category']
       category.post_count += 1
       category.save()
-      # print(id(category), 'it is changing_public step')
       
     # none exist instance(first generated post)
     # or post that has already been created but is not in the public state set created_at data

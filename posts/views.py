@@ -97,7 +97,7 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     
   def delete(self, request):
     body = request.data
-    post_id = body.pop("id")
+    post_id = self.has_id_param(body)
     post = self.get_object(id=post_id)
     # if the post is published, remove the part associated with it first
     if (post.is_finish):
