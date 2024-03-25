@@ -23,26 +23,55 @@ TEST_ADMIN_USER_DATA = {
   'is_superuser': True,
 }
 
+TEST_ADMIN_USER2_DATA= {
+  'email': 'admin_tester1234@gmail.com',
+  '_name': 'admin_tester1234',
+  'password': '12345678',
+  'is_staff': True,
+  'is_superuser': True,
+}
+
 TEST_POST_DATA = {
   'title': 'test post title', 
   'introduce': 'hello world!',
   'is_finish': False,
 }
+
+def set_client(user, endpoint):
+  client = APIClient()
+  client.user = user
+  client.endpoint = endpoint
+  refresh = RefreshToken.for_user(user)
+  access = str(refresh.access_token)
+  client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+  
+  return client
   
 @pytest.fixture(params=[{'user': TEST_ADMIN_USER_DATA, 'endpoint': '/'}])
 def client(request, db):
   user_data = request.param['user']
   user = User.objects.create_user(**user_data)
-  client = APIClient()
-  client.user = user
-  client.endpoint = request.param['endpoint']
-  refresh = RefreshToken.for_user(user)
-  access = str(refresh.access_token)
-  client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+  client = set_client(user, request.param['endpoint'])
   
   yield client
   #teardown
   User.objects.delete_user(client.user)
+  
+@pytest.fixture(params=[{'user': [TEST_ADMIN_USER_DATA], 'endpoint': '/'}])
+def clients(request, db):
+  clients = []
+  users_data = request.param['user']
+  for user_data in users_data:
+    user = User.objects.create_user(**user_data)
+    client = set_client(user, request.param['endpoint'])
+    clients.append(client)
+    
+  yield clients
+  
+  for client in clients:
+    User.objects.delete_user(client.user)
+    
+  
   
 @pytest.fixture(params=[{'is_finish': False, 'category': ''}])
 def post_client(request, client, category, body, db):
@@ -54,26 +83,6 @@ def post_client(request, client, category, body, db):
   client.user.post = created_post
   
   yield client
-  
-  
-@pytest.fixture()
-def base_client(request, category, body, db):
-  user = User.objects.create_user(**TEST_ADMIN_USER_DATA)
-  client = APIClient()
-  client.user = user
-  client.endpoint = request.param['endpoint']
-  refresh = RefreshToken.for_user(user)     
-  access = str(refresh.access_token)
-  client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
-  body['author'] = client.user.name
-  body['category'], body['is_finish'] = request.param.get('category', ''), request.param.get('is_finish', False)
-  create_post = client.post(client.endpoint, body)
-  created_post = Post.objects.get(id=create_post.data['id'])
-  client.user.post = created_post
-  
-  yield client
-  
-  User.objects.delete_user(client.user)
   
 
 @pytest.fixture()
