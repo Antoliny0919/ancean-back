@@ -43,6 +43,9 @@ def pytest_report_header(config):
   return f"ancean api test -> env: {os.environ['DJANGO_SETTINGS_MODULE']}"
 
 def set_client(user, endpoint):
+  '''
+  set client object default settings
+  '''
   client = APIClient()
   client.user = user
   client.endpoint = endpoint
@@ -53,7 +56,9 @@ def set_client(user, endpoint):
   return client
 
 def package_http_request(client, method, body=None, url=None):
-  
+  '''
+  default setting of HTTP request for API client object
+  '''
   request_http_method = getattr(client, method.lower())
   if not url:
     url = client.endpoint
@@ -77,6 +82,10 @@ def client(request, db):
   
 @pytest.fixture(params=[{'user': [TEST_ADMIN_USER_DATA], 'endpoint': '/'}])
 def clients(request, db):
+  '''
+  user parameters can receive multiple user data in array form
+  fixture to create multiple user
+  '''
   clients = []
   users_data = request.param['user']
   for user_data in users_data:
@@ -93,6 +102,9 @@ def clients(request, db):
   
 @pytest.fixture(params=[{'is_finish': False, 'category': ''}])
 def post_client(request, client, category, body, db):
+  '''
+  create a dedicated client for post related testing
+  '''
   client.endpoint = '/api/posts/'
   body['author'] = client.user.name
   body['category'], body['is_finish'] = request.param.get('category', ''), request.param.get('is_finish', False)

@@ -7,6 +7,10 @@ from conftest import TEST_ADMIN_USER_DATA, TEST_ADMIN_USER2_DATA, package_http_r
 
 
 def test_non_id_delete_post(post_client):
+  '''
+  the delete method determines which posts to delete through the transmitted id value
+  test when these id value are not enclosed in the HTTP request message
+  '''
   error_response = package_http_request(post_client, 'delete')
 
   assert error_response.status_code == status.HTTP_400_BAD_REQUEST
@@ -14,7 +18,10 @@ def test_non_id_delete_post(post_client):
   
 @pytest.mark.parametrize('clients', [pytest.param({'user': [TEST_ADMIN_USER_DATA, TEST_ADMIN_USER2_DATA], 'endpoint': '/api/posts/'})], indirect=['clients'])
 def test_not_owner_delete_post(clients, body):
-  
+  '''
+  post cannot be delete by users other than the owner of post
+  test when a user other than the owner of the post tries to delete the post
+  '''
   client_a, client_b = clients[0], clients[1]
   body['author'] = client_a.user.name
   created_post = package_http_request(client_a, 'post', body=body)
@@ -32,7 +39,9 @@ def test_not_owner_delete_post(clients, body):
     pytest.param({'is_finish': False, 'category': 'DJANGO'}, 0, 0),
   ], indirect=['post_client'])
 def test_category_delete_post(post_client, expected_before_post_count, expected_after_post_count):
-  
+  '''
+  observe changes in properties of category objects associated with posts due to post delete
+  '''
   created_post = post_client.user.post
   before_category = Category.objects.get(name=created_post.category.name)
   assert before_category.post_count == expected_before_post_count
@@ -42,6 +51,9 @@ def test_category_delete_post(post_client, expected_before_post_count, expected_
   assert after_category.post_count == expected_after_post_count
   
 def test_image_storage_delete_post(post_client):
+  '''
+  post deletion require the image storage of that post to also be deleted
+  '''
   created_post = post_client.user.post
   package_http_request(post_client, 'delete', body={'id': created_post.id})
   post_image_storage_path = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{post_client.user.name}/{created_post.id}')
