@@ -1,7 +1,7 @@
-import json
 import pytest
 from rest_framework import status
 from category.models import Category
+from conftest import package_http_request
 
 def test_non_id_patch_post(post_client):
   '''
@@ -10,7 +10,7 @@ def test_non_id_patch_post(post_client):
   '''
   created_post = post_client.user.post
   body = {'title': created_post.title, 'author': created_post.author.name, 'is_finish': False}
-  error_response = post_client.patch(post_client.endpoint, json.dumps(body), content_type='application/Json')
+  error_response = package_http_request(post_client, 'patch', body)
   
   assert error_response.status_code == status.HTTP_400_BAD_REQUEST
   assert error_response.data == {'detail': '포스트 id를 확인할 수 없습니다.'}
@@ -34,7 +34,7 @@ def test_is_finish_patch_post(post_client, is_finish, expected_response):
     'author': created_post.author.name, 
     'is_finish': is_finish
   }
-  response = post_client.patch(post_client.endpoint, json.dumps(body), content_type='application/Json')
+  response = package_http_request(post_client, 'patch', body)
   assert response.status_code == status.HTTP_200_OK
   assert response.data == expected_response
   
@@ -60,7 +60,7 @@ def test_category_patch_post(category, post_client, is_finish, expected_post_cou
     'is_finish': is_finish, 
     'category': category.name
   }
-  post_client.patch(post_client.endpoint, json.dumps(body), content_type='application/Json')
+  package_http_request(post_client, 'patch', body)
   category = Category.objects.get(name=category.name)
   assert category.post_count == expected_post_count
 

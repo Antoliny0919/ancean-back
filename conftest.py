@@ -1,3 +1,5 @@
+import os
+import json
 import copy
 import pytest
 from django.contrib.auth import get_user_model
@@ -37,6 +39,9 @@ TEST_POST_DATA = {
   'is_finish': False,
 }
 
+def pytest_report_header(config):
+  return f"ancean api test -> env: {os.environ['DJANGO_SETTINGS_MODULE']}"
+
 def set_client(user, endpoint):
   client = APIClient()
   client.user = user
@@ -46,6 +51,19 @@ def set_client(user, endpoint):
   client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
   
   return client
+
+def package_http_request(client, method, body=None, url=None):
+  
+  request_http_method = getattr(client, method.lower())
+  if not url:
+    url = client.endpoint
+  
+  if body:
+    response = request_http_method(url, json.dumps(body), content_type='application/Json')
+    return response
+  
+  response = request_http_method(url)
+  return response
   
 @pytest.fixture(params=[{'user': TEST_ADMIN_USER_DATA, 'endpoint': '/'}])
 def client(request, db):
