@@ -1,10 +1,10 @@
 import os
-import json
 import pytest
 from django.conf import settings
 from rest_framework import status
 from conftest import TEST_COMMON_USER_DATA, TEST_ADMIN_USER_DATA, package_http_request
 from category.models import Category
+from posts.models import Post
 
 @pytest.mark.parametrize(
 "client, status_code",
@@ -60,5 +60,20 @@ def test_image_storage_create_post(client, body):
   post_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{client.user.name}/{post_id}')
   assert os.path.exists(post_image_storage)
   
+@pytest.mark.parametrize("client, foreign_value, status_code",
+[
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'category': 'NONE_EXIST_CATEGORY'}, status.HTTP_201_CREATED),
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'author': 'NONE_EXIST_USER'}, status.HTTP_400_BAD_REQUEST)
+], indirect=["client"])
+def test_wrong_foreign_value_create_post(client, body, foreign_value, status_code):
+  '''
+  test foreign keys when client have request invalid(non-existent) values
+  it the field is required, an error occurs, and the field that is not required is null
+  '''
+  body['author'] = client.user.name
+  for key, value in foreign_value.items():
+    body[key] = value
+
+  response = package_http_request(client, 'post', body)
   
-  
+  assert response.status_code != status_code

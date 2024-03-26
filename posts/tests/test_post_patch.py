@@ -1,7 +1,7 @@
 import pytest
 from rest_framework import status
-from category.models import Category
 from conftest import package_http_request
+from category.models import Category
 
 def test_non_id_patch_post(post_client):
   '''
@@ -11,7 +11,6 @@ def test_non_id_patch_post(post_client):
   created_post = post_client.user.post
   body = {'title': created_post.title, 'author': created_post.author.name, 'is_finish': False}
   error_response = package_http_request(post_client, 'patch', body)
-  
   assert error_response.status_code == status.HTTP_400_BAD_REQUEST
   assert error_response.data == {'detail': '포스트 id를 확인할 수 없습니다.'}
 

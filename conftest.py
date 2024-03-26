@@ -97,8 +97,6 @@ def clients(request, db):
   
   for client in clients:
     User.objects.delete_user(client.user)
-    
-  
   
 @pytest.fixture(params=[{'is_finish': False, 'category': ''}])
 def post_client(request, client, category, body, db):
@@ -113,7 +111,6 @@ def post_client(request, client, category, body, db):
   client.user.post = created_post
   
   yield client
-  
 
 @pytest.fixture()
 def category(db):

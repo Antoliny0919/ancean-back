@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from django.db import models
 from .models import Post
 from .validators import default_errors_message
@@ -24,6 +24,11 @@ class PostCreateSerializer(serializers.Serializer):
   category = serializers.CharField(required=False)
   content = serializers.JSONField(required=False)
   
+  @classmethod
+  def it_required(cls, field):
+    field = cls.get_fields(cls)[field]
+    return field.required
+  
   def convert_string_to_foreign_obj(self, **foreign_fields):
     """
     convert the foreign key to the appropriate object
@@ -37,10 +42,15 @@ class PostCreateSerializer(serializers.Serializer):
         if hasattr(model, '_name'):
           converted_foreign_fields[key] = model.objects.get(_name=data['value'])
         else:
+          print(key, data['value'], 'it is convert_string_to_foreign_obj step')
           converted_foreign_fields[key] = model.objects.get(name=data['value'])
         
-      except model.DoesNotExists:
-        raise f'{key}에 {data["value"]}는 존재하지 않습니다.'
+      except model.DoesNotExist:
+        # when an model object that matches the values does not exist
+        # if the required field is an error, the non-required field becomes a null value
+        if self.it_required(key):
+          raise exceptions.ValidationError(f'{key}에 {data["value"]}는 존재하지 않습니다.')
+        converted_foreign_fields[key] = None
   
     return converted_foreign_fields
   
@@ -51,7 +61,6 @@ class PostCreateSerializer(serializers.Serializer):
     """
     foreign_fields = {}
     data_fields = data.keys()
-    
     for fields in Post._meta.get_fields():
       if type(fields) == models.ForeignKey and fields.name in data_fields:
         foreign_fields[fields.name] = {'model': fields.related_model, 'value': data[fields.name]}
