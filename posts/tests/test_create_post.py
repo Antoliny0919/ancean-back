@@ -15,7 +15,7 @@ from posts.models import Post
 indirect=['client']
 )
 
-def test_user_create_post(client, status_code, body):
+def test_relate_client(client, status_code, body):
   '''
   test post creation according to user
   only admin users can be post-created
@@ -32,7 +32,7 @@ def test_user_create_post(client, status_code, body):
 ],
 indirect=["client"]
 )
-def test_is_finish_create_post(category, client, is_finish, expected_response, post_count, body):
+def test_relate_is_finish_state(category, client, is_finish, expected_response, post_count, body):
   '''
   comparison of post generation difference according to is_finish status
   is_finish field is whether the post is finally issued or not
@@ -50,7 +50,7 @@ def test_is_finish_create_post(category, client, is_finish, expected_response, p
 
 
 @pytest.mark.parametrize("client", [pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'})], indirect=["client"])
-def test_image_storage_create_post(client, body):
+def test_relate_image_storage(client, body):
   '''
   when a post is created, test whether a folder has been created to store the image file for the post
   '''
@@ -65,7 +65,7 @@ def test_image_storage_create_post(client, body):
   pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'category': 'NONE_EXIST_CATEGORY'}, status.HTTP_201_CREATED),
   pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'author': 'NONE_EXIST_USER'}, status.HTTP_400_BAD_REQUEST)
 ], indirect=["client"])
-def test_wrong_foreign_value_create_post(client, body, foreign_value, status_code):
+def test_relate_wrong_foreign_value(client, body, foreign_value, status_code):
   '''
   test foreign keys when client have request invalid(non-existent) values
   it the field is required, an error occurs, and the field that is not required is null
@@ -76,4 +76,4 @@ def test_wrong_foreign_value_create_post(client, body, foreign_value, status_cod
 
   response = package_http_request(client, 'post', body)
   
-  assert response.status_code != status_code
+  assert response.status_code == status_code

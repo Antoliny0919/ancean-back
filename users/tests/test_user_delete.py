@@ -7,7 +7,7 @@ from conftest import TEST_ADMIN_USER_DATA
 User = get_user_model()
 
 @pytest.mark.django_db
-def test_personal_image_storage():
+def test_relate_personal_image_storage():
   '''
   test if a personal image storage is also created and removed when a user is created and removed
   '''

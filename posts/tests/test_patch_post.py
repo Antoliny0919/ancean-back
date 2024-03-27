@@ -3,7 +3,7 @@ from rest_framework import status
 from conftest import package_http_request
 from category.models import Category
 
-def test_non_id_patch_post(post_client):
+def test_wrong_request(post_client):
   '''
   post modification identifies the post to be corrected through the post id value of the request
   this test when client did not send id case
@@ -22,7 +22,7 @@ def test_non_id_patch_post(post_client):
     pytest.param(True, {'redirect_path': '/posts/1/'})
   ],
 )
-def test_is_finish_patch_post(post_client, is_finish, expected_response):
+def test_relate_is_finish_state(post_client, is_finish, expected_response):
   '''
   test the change in the post modification success resposne according to the is_finish field value
   '''
@@ -45,7 +45,7 @@ def test_is_finish_patch_post(post_client, is_finish, expected_response):
     pytest.param(False, 0)
   ],
 )
-def test_category_patch_post(category, post_client, is_finish, expected_post_count):
+def test_relate_category(category, post_client, is_finish, expected_post_count):
   '''
   when a post have a category
   test the change in the post_count field value of the foreign key category

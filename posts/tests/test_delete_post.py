@@ -6,7 +6,7 @@ from category.models import Category
 from conftest import TEST_ADMIN_USER_DATA, TEST_ADMIN_USER2_DATA, package_http_request
 
 
-def test_non_id_delete_post(post_client):
+def test_wrong_request(post_client):
   '''
   the delete method determines which posts to delete through the transmitted id value
   test when these id value are not enclosed in the HTTP request message
@@ -17,7 +17,7 @@ def test_non_id_delete_post(post_client):
   assert error_response.data == {'detail': '포스트 id를 확인할 수 없습니다.'}
   
 @pytest.mark.parametrize('clients', [pytest.param({'user': [TEST_ADMIN_USER_DATA, TEST_ADMIN_USER2_DATA], 'endpoint': '/api/posts/'})], indirect=['clients'])
-def test_not_owner_delete_post(clients, body):
+def test_not_owner_request(clients, body):
   '''
   post cannot be delete by users other than the owner of post
   test when a user other than the owner of the post tries to delete the post
@@ -38,7 +38,7 @@ def test_not_owner_delete_post(clients, body):
     pytest.param({'is_finish': True, 'category': 'DJANGO'}, 1, 0),
     pytest.param({'is_finish': False, 'category': 'DJANGO'}, 0, 0),
   ], indirect=['post_client'])
-def test_category_delete_post(post_client, expected_before_post_count, expected_after_post_count):
+def test_relate_category(post_client, expected_before_post_count, expected_after_post_count):
   '''
   observe changes in properties of category objects associated with posts due to post delete
   '''
@@ -50,7 +50,7 @@ def test_category_delete_post(post_client, expected_before_post_count, expected_
   assert response.status_code == status.HTTP_204_NO_CONTENT
   assert after_category.post_count == expected_after_post_count
   
-def test_image_storage_delete_post(post_client):
+def test_relate_image_storage(post_client):
   '''
   post deletion require the image storage of that post to also be deleted
   '''

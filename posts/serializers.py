@@ -74,7 +74,7 @@ class PostCreateSerializer(serializers.Serializer):
   def create(self, validated_data):
     
     is_publish = validated_data["is_finish"]
-    if (is_publish):
+    if is_publish:
       validated_data = Post.changing_public(instance=None, **validated_data)
     
     post = Post.objects.create(**validated_data)
