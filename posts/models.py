@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.core.cache import cache
 from django_prometheus.models import ExportModelOperationsMixin
 from users.models import User
 from category.models import Category
@@ -58,6 +59,13 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
       category = getattr(instance, 'category')
       category.post_count -= 1
       category.save()
+      
+  def save(self, *args, **kwargs):
+    cache.delete('post')
+    super().save(*args, **kwargs)
   
+  def delete(self, *args, **kwargs):
+    cache.delete('post')
+    super().save(*args, **kwargs)
     
     

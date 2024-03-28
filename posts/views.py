@@ -2,6 +2,9 @@ import os
 import django_filters.rest_framework
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import status, generics, mixins, exceptions
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
@@ -48,7 +51,8 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
   
     except KeyError:
       raise exceptions.ParseError('포스트 id를 확인할 수 없습니다.')
-    
+  
+  # @method_decorator(cache_page(60*60))
   def get(self, request, *args, **kwargs):
     '''
     if an id value exists in the query, it is identified as a request for a single value
@@ -57,7 +61,7 @@ class PostView(generics.GenericAPIView, mixins.ListModelMixin):
     request_single_post = request.query_params.get('id')
     if request_single_post:
       query = {key: value for key, value in request.query_params.items()}
-      post = get_object_or_404(self.model, **query)
+      post = cache.get_or_set(f'post_{request_single_post}', get_object_or_404(self.model, **query))
       if request.auth:
         # when an authenticated user requests a single post --> considered permissions a required request
         # for example, when a user tries to modify a post, 

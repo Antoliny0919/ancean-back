@@ -1,5 +1,6 @@
 import os
 from django.conf import settings
+# from django_redis import get_redis_connection
 from rest_framework import serializers, exceptions
 from django.db import models
 from .models import Post

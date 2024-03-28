@@ -10,3 +10,4 @@ pyjwt
 gunicorn
 Pillow
 pytest-django
+django-redis

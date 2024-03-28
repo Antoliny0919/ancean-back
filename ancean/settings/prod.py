@@ -7,7 +7,7 @@ DEBUG = True
 CORS_ORIGIN_ALLOW_ALL = True
 
 POSTGRES_SECRETS = os.path.join(SECRETS_FOLDER, 'postgres-secrets.json')
- 
+
 SERVER_URI = 'http://ancean.net:80'
 
 with open(POSTGRES_SECRETS) as f:
@@ -36,5 +36,16 @@ DATABASES = {
     'PASSWORD': get_secret(postgres_secrets, 'POSTGRES_PASSWORD'),
     'HOST': get_secret(postgres_secrets, 'POSTGRES_HOST'),
     'PORT': get_secret(postgres_secrets, 'POSTGRES_PORT'),
+  }
+}
+
+
+CACHES = {
+  "default": {
+    "BACKEND": "django_redis.cache.RedisCache",
+    "LOCATION": "redis://redis:6379/1",
+    "OPTIONS": {
+        "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    }
   }
 }

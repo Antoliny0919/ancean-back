@@ -2,7 +2,9 @@ import os
 import json
 import copy
 import pytest
+# from PIL import image
 from django.contrib.auth import get_user_model
+# from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from category.models import Category
@@ -111,6 +113,10 @@ def post_client(request, client, category, body, db):
   client.user.post = created_post
   
   yield client
+  
+@pytest.fixture()
+def image():
+  pass
 
 @pytest.fixture()
 def category(db):
