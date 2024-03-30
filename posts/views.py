@@ -1,17 +1,16 @@
-import os
+import shutil
 import django_filters.rest_framework
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from rest_framework import status, generics, mixins, exceptions
+from rest_framework import status, generics, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
+from rest_framework.decorators import throttle_classes
 from posts.models import Post
 from category.models import Category
 from .permissions import IsOwnerAndAdmin
-from .serializers import PostGetSerializer, PostCreateSerializer
+from .serializers import PostGetSerializer, PostSerializer
 
 # Create your views here.
 
@@ -21,95 +20,31 @@ class PostFilter(django_filters.FilterSet):
   author__name = django_filters.CharFilter(lookup_expr="iexact")
   is_finish = django_filters.BooleanFilter()
   id = django_filters.NumberFilter(lookup_expr="exact")
-
-class PostView(generics.GenericAPIView, mixins.ListModelMixin):
-  queryset = Post.objects.all()
-  model = Post
-  serializer_class = PostGetSerializer
+  
+class PostViewSet(viewsets.ModelViewSet):
+  queryset = cache.get_or_set('post', Post.objects.all())
+  serializer_class = PostSerializer
   permission_classes = [IsOwnerAndAdmin]
   filter_backends = [django_filters.rest_framework.DjangoFilterBackend, OrderingFilter]
   filterset_class = PostFilter
   ordering_fields = ['wave', 'created_at']
   
-  def permission_denied(self, request, message=None, code=None):
-    """
-    if request is not permitted, determine what kind of exception to raise.
-    """
-    if request.authenticators and not request.successful_authenticator:
-        raise exceptions.NotAuthenticated(detail='로그인이 필요한 서비스입니다. 로그인을 먼저 진행해 주세요!')
-    raise exceptions.PermissionDenied(detail=message, code=code)
-  
-  def get_object(self, **kwargs):
-    obj = get_object_or_404(self.model, **kwargs)
-    self.check_object_permissions(self.request, obj)
-    return obj
-  
-  def has_id_param(self, body):
-    try:
-      post_id = body.pop('id')
-      return post_id
-  
-    except KeyError:
-      raise exceptions.ParseError('포스트 id를 확인할 수 없습니다.')
-  
-  # @method_decorator(cache_page(60*60))
-  def get(self, request, *args, **kwargs):
-    '''
-    if an id value exists in the query, it is identified as a request for a single value
-    so use PostGetSerializer and parameter many value --> False (return in array form for a definite single value is problematic)
-    '''
-    request_single_post = request.query_params.get('id')
-    if request_single_post:
-      query = {key: value for key, value in request.query_params.items()}
-      post = cache.get_or_set(f'post_{request_single_post}', get_object_or_404(self.model, **query))
-      if request.auth:
-        # when an authenticated user requests a single post --> considered permissions a required request
-        # for example, when a user tries to modify a post, 
-        # the person who tries to modify it and the author of the post must match to get information about that post
-        self.check_object_permissions(self.request, post)
-      serializer = PostGetSerializer(post)
-      return Response(serializer.data, status=status.HTTP_200_OK)
+  def retrieve(self, request, *args, **kwargs):
+    if request.auth:
+      instance = self.get_object()
+    # Anonymous User reqeust retrieve post, none check object_permission step
+    instance = get_object_or_404(self.queryset, **self.kwargs)
+    serializer = self.get_serializer(instance)
     
-    return self.list(request, args, kwargs)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   
-  def post(self, request):
-    body = request.data
-    serializer = PostCreateSerializer(data=body)
-    if serializer.is_valid():
-      post = serializer.save()
-      # is_finish = true --> this post is finally published so redirect corresponding post
-      if serializer.data["is_finish"]:
-        return Response({'redirect_path': f'/posts/{post.id}/', 'id': post.id}, status=status.HTTP_201_CREATED)
-      return Response({'detail': '포스트가 생성되었습니다.', 'id': post.id}, status=status.HTTP_201_CREATED)
-    else:
-      return Response({'detail': '포스트가 생성에 실패하였습니다.', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
-  
-  def patch(self, request):
-    body = request.data
-    post_id = self.has_id_param(body)
-    post = self.get_object(id=post_id)
-    serializer = PostCreateSerializer(instance=post, data=body, partial=True)
-    if serializer.is_valid():
-      post = serializer.save()
-      # is_finish = true --> this post is already finally published so redirect corresponding post
-      if post.is_finish:
-        return Response({'redirect_path': f'/posts/{post.id}/'}, status=status.HTTP_200_OK)
-      return Response({'detail': '포스트가 임시저장되었습니다.'}, status=status.HTTP_200_OK)
-    else:
-      return Response({'detail': '포스트가 임시저장에 실패하였습니다.','errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
-  def delete(self, request):
-    body = request.data
-    post_id = self.has_id_param(body)
-    post = self.get_object(id=post_id)
-    # if the post is published, remove the part associated with it first
-    if (post.is_finish):
-        self.model.changing_private(post)
+  def perform_destroy(self, instance):
+    if (instance.is_finish):
+      Post.changing_private(instance)
     # remove the image folder for the post
-    os.rmdir(f'{settings.MEDIA_ROOT}/{post.author.name}/{post.id}')
-    post.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    image_storage = f'{settings.MEDIA_ROOT}/{instance.author.name}/{instance.id}'
+    shutil.rmtree(image_storage, ignore_errors=True)
+    instance.delete()
   
 class CategoryPostView(generics.ListAPIView):
   serializer_class = PostGetSerializer

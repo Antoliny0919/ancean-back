@@ -102,11 +102,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.ScopedRateThrottle',
-    ],
+    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.ScopedRateThrottle',],
     'DEFAULT_THROTTLE_RATES': {
-        'upload': '20/day'
+        'get_post': '1/s',
+        'create_post': '20/day',
     }
 }
 

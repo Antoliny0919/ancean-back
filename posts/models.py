@@ -61,11 +61,11 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
       category.save()
       
   def save(self, *args, **kwargs):
-    cache.delete('post')
+    cache.delete('posts')
     super().save(*args, **kwargs)
-  
+
   def delete(self, *args, **kwargs):
-    cache.delete('post')
-    super().save(*args, **kwargs)
+    cache.delete('posts')
+    super().delete(*args, **kwargs)
     
     

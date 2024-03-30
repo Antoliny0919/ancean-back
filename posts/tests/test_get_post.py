@@ -1,5 +1,8 @@
 # import copy
+# import time
+# import random
 # import pytest
+# from django.core.cache import cache
 # from posts.models import Post
 # from users.models import User
 # from category.models import Category
@@ -22,13 +25,13 @@
 #     client = set_client(user, '/api/posts/')
 #     default_body['author'] = client.user.name
     
-#     for i in range(10):
+#     for i in range(10000):
 #       body = copy.deepcopy(default_body)
 #       body['title'] = f'{body["title"]}-{i}'
-#       body['category'] = categories[i % len(CATEGORIES_NAME)]
 #       package_http_request(client, 'post', body)
     
 #     yield client
+    
 
 # @pytest.mark.parametrize(
 #   'query',
