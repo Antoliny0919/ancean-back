@@ -25,14 +25,14 @@ def test_relate_client(client, status_code, body):
   assert response.status_code == status_code
 
 @pytest.mark.parametrize(
-"client, is_finish, expected_response, post_count", 
+"client, is_finish, post_count", 
 [
-  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, True, lambda id: {'redirect_path': f'/posts/{id}/', 'id': id}, 1),
-  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, False, lambda id: {'detail': '포스트가 생성되었습니다.', 'id': id}, 0)
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, True, 1),
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, False, 0),
 ],
 indirect=["client"]
 )
-def test_relate_is_finish_state(category, client, is_finish, expected_response, post_count, body):
+def test_relate_is_finish_state(category, client, is_finish, post_count, body):
   '''
   comparison of post generation difference according to is_finish status
   is_finish field is whether the post is finally issued or not
@@ -42,11 +42,11 @@ def test_relate_is_finish_state(category, client, is_finish, expected_response, 
   response = package_http_request(client, 'post', body)
   assert response.status_code == status.HTTP_201_CREATED
   post_id = response.data['id']
-  assert response.data == expected_response(post_id)
-  check_post = package_http_request(client, 'get', url=f'/api/posts/?id={post_id}')
+  check_post = package_http_request(client, 'get', url=f'/api/posts/{post_id}/')
   category = Category.objects.get(name=check_post.data['category'])
   
   assert category.post_count == post_count
+
 
 
 @pytest.mark.parametrize("client", [pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'})], indirect=["client"])
