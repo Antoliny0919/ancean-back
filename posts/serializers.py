@@ -31,11 +31,7 @@ class PostSerializer(serializers.ModelSerializer):
     for key, data in foreign_fields.items():
       try: 
         model = data['model']
-        # check field name property have setter 
-        if hasattr(model, '_name'):
-          converted_foreign_fields[key] = model.objects.get(_name=data['value'])
-        else:
-          converted_foreign_fields[key] = model.objects.get(name=data['value'])
+        converted_foreign_fields[key] = model.objects.get(name=data['value'])
         
       except model.DoesNotExist:
         # when an model object that matches the values does not exist

@@ -13,13 +13,13 @@ User = get_user_model()
 
 TEST_COMMON_USER_DATA = {
   'email': 'common_tester123@gmail.com', 
-  '_name': 'common_tester123', 
+  'name': 'common_tester123', 
   'password': '12345678'
 }
 
 TEST_ADMIN_USER_DATA = {
   'email': 'admin_tester123@gmail.com', 
-  '_name': 'admin_tester123', 
+  'name': 'admin_tester123', 
   'password': '12345678', 
   'is_staff': True,
   'is_superuser': True,
@@ -27,7 +27,7 @@ TEST_ADMIN_USER_DATA = {
 
 TEST_ADMIN_USER2_DATA= {
   'email': 'admin_tester1234@gmail.com',
-  '_name': 'admin_tester1234',
+  'name': 'admin_tester1234',
   'password': '12345678',
   'is_staff': True,
   'is_superuser': True,
