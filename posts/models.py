@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django.core.cache import cache
 from django_prometheus.models import ExportModelOperationsMixin

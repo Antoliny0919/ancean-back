@@ -4,8 +4,8 @@ from rest_framework import serializers, exceptions
 
 class ImageSerializer(serializers.Serializer):
   
-  file = serializers.ImageField()
   id = serializers.IntegerField(min_value=0)
+  file = serializers.ImageField()
   name = serializers.CharField()
   
   
@@ -38,14 +38,10 @@ class ImageSerializer(serializers.Serializer):
     
     create is the action of storing objects in a folder rather than creating objects in a model
     """
-    
     user_post_store_path, image_file = validated_data["user_post_store_path"], validated_data["file"]
     save_path = os.path.join(user_post_store_path, image_file.name)
-    
     with open(save_path, mode='wb') as file:
       for chunk in image_file.chunks():
         file.write(chunk)
-        
-    source_url = save_path.replace(str(getattr(settings, 'MAIN_DIR')), getattr(settings, 'SERVER_URI'))
-    
+    source_url = save_path.replace(str(getattr(settings, 'BASE_DIR')), getattr(settings, 'SERVER_URI'))
     return {'success': 1, 'file': {'url': source_url, 'name': image_file.name}}

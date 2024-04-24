@@ -16,9 +16,7 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-MAIN_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR= Path(__file__).resolve().parent.parent
 
 SECRETS_FOLDER = os.path.join(Path(__file__).resolve().parent.parent, 'secrets')
 
@@ -27,16 +25,16 @@ DJANGO_SECRETS = os.path.join(SECRETS_FOLDER, 'django-secrets.json')
 with open(DJANGO_SECRETS) as f:
     django_secrets = json.loads(f.read())
     
-def get_secret(secret, key):
+def get_secret(secret, section):
     """Get SECRET_KEY Value or Error"""
     try:
-        return secret[key]
+        return secret[section]
     except KeyError:
-        error_msg = f"None exist {key} environment variable."
+        error_msg = f"None exist {section} environment variable."
         raise ImproperlyConfigured(error_msg)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret(django_secrets, "SECRET_KEY")
+SECRET_KEY = get_secret(django_secrets, "DJANGO")["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -81,6 +79,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'ancean.urls'
 
+START_API_ROUTE_APPS = [
+    'authentication',
+    'posts',
+    'users',
+    'image',
+    'category',
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -106,6 +112,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'get_post': '1/s',
         'create_post': '20/day',
+        'create_image': '200/day',
     }
 }
 
@@ -150,27 +157,27 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(MAIN_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(MAIN_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
-OAUTH_SECRETS = os.path.join(SECRETS_FOLDER, 'oauth-secrets.json')
+# OAUTH_SECRETS = os.path.join(SECRETS_FOLDER, 'oauth-secrets.json')
 
-with open(OAUTH_SECRETS) as f:
-    oauth_secrets = json.loads(f.read())
+# with open(OAUTH_SECRETS) as f:
+#     oauth_secrets = json.loads(f.read())
 
-OAUTH_SECRETS_COLLECTION = oauth_secrets
+OAUTH_SECRETS_COLLECTION = get_secret(django_secrets, "OAUTH")
 
 # JWT Token 
 
@@ -216,10 +223,14 @@ SIMPLE_JWT = {
 
 #SMTP 
 
+SMTP_SECRETS_COLLECTION = get_secret(django_secrets, "SMTP")
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
-EMAIL_HOST_USER = get_secret(django_secrets, "EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = get_secret(django_secrets, "EMAIL_HOST_PASSWORD")
+# EMAIL_HOST_USER = get_secret(django_secrets, "EMAIL_HOST_USER")
+EMAIL_HOST_USER = SMTP_SECRETS_COLLECTION["EMAIL_HOST_USER"]
+# EMAIL_HOST_PASSWORD = get_secret(django_secrets, "EMAIL_HOST_PASSWORD")
+EMAIL_HOST_PASSWORD = SMTP_SECRETS_COLLECTION["EMAIL_HOST_PASSWORD"]
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

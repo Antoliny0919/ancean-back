@@ -3,13 +3,10 @@ import django_filters
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
-from rest_framework import status, generics, viewsets, filters
+from rest_framework import status, viewsets, filters
 from rest_framework.response import Response
-from rest_framework.decorators import throttle_classes
 from django_filters.rest_framework import DjangoFilterBackend
 from posts.models import Post
-from category.models import Category
-from .throttling import ObjectAnonThrottle
 from .permissions import IsOwnerAndAdmin
 from .serializers import PostSerializer
 
@@ -22,7 +19,7 @@ class PostFilter(django_filters.FilterSet):
   is_finish = django_filters.BooleanFilter()
   
 class PostViewSet(viewsets.ModelViewSet):
-  queryset = cache.get_or_set('post', Post.objects.all())
+  queryset = Post.objects.all()
   serializer_class = PostSerializer
   permission_classes = [IsOwnerAndAdmin]
   filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
@@ -45,3 +42,6 @@ class PostViewSet(viewsets.ModelViewSet):
     image_storage = f'{settings.MEDIA_ROOT}/{instance.author.name}/{instance.id}'
     shutil.rmtree(image_storage, ignore_errors=True)
     instance.delete()
+    
+    
+    

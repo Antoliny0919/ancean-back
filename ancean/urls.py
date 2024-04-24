@@ -23,9 +23,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # django_prometheus url --> urls metrics/
     path('prometheus/', include('django_prometheus.urls')),
-    path('api/', include('users.urls')),
-    path('api/', include('authentication.urls'),),
-    path('api/', include('image.urls'),),
-    path('api/', include('posts.urls'),),
-    path('api/', include('category.urls'),),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+for app in getattr(settings, 'START_API_ROUTE_APPS'):
+    urlpatterns.append(path('api/', include(f'{app}.urls')))
+
+if settings.DEBUG:  
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

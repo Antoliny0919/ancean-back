@@ -23,6 +23,6 @@ class ImageView(views.APIView):
       response = serializer.save()
       return Response(response, status=status.HTTP_200_OK)
     else:
-      return Response({'detail': '이미지를 생성할 수 없습니다. 먼저 포스트를 생성해주세요(임시저장).'}, status=status.HTTP_400_BAD_REQUEST)
+      return Response({'detail': '이미지를 생성할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
   
   

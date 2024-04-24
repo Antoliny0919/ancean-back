@@ -7,16 +7,13 @@ from .models import Post
 class PostSerializer(serializers.ModelSerializer):
   
   header_image = serializers.CharField(required=False)
-  title = serializers.CharField()
-  is_finish = serializers.BooleanField()
   author = serializers.CharField()
-  introduce = serializers.CharField(required=False)
   category = serializers.CharField(required=False)
-  content = serializers.JSONField(required=False)
   
   class Meta:
     model = Post
     fields = '__all__'
+    
   
   def it_required(self, field):
     field = self.__class__.get_fields(self)[field]
@@ -49,10 +46,13 @@ class PostSerializer(serializers.ModelSerializer):
     """
     foreign_fields = {}
     data_fields = data.keys()
+    
     for fields in Post._meta.get_fields():
       if type(fields) == models.ForeignKey and fields.name in data_fields:
         foreign_fields[fields.name] = {'model': fields.related_model, 'value': data[fields.name]}
+        
     converted_foreign_fields = self.convert_string_to_foreign_obj(**foreign_fields)
+    
     for key in converted_foreign_fields.keys():
       data[key] = converted_foreign_fields[key]
       

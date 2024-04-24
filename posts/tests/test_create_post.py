@@ -4,7 +4,6 @@ from django.conf import settings
 from rest_framework import status
 from conftest import TEST_COMMON_USER_DATA, TEST_ADMIN_USER_DATA, package_http_request
 from category.models import Category
-from posts.models import Post
 
 @pytest.mark.parametrize(
 "client, status_code",

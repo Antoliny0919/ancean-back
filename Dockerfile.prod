@@ -27,7 +27,7 @@ COPY --from=builder-image usr/app/venv ./venv
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV DJANGO_SETTINGS_MODULE ancean.settings.prod
+ENV DJANGO_SETTINGS_MODULE ancean.settings.stag
 
 # activate virtual environment
 ENV VIRTUAL_ENV=/usr/app/venv
