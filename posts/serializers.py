@@ -19,43 +19,33 @@ class PostSerializer(serializers.ModelSerializer):
     field = self.__class__.get_fields(self)[field]
     return field.required
   
-  def convert_string_to_foreign_obj(self, **foreign_fields):
+  def convert_string_to_foreign_obj(self, model, field, value):
     """
     convert the foreign key to the appropriate object
     """
-    converted_foreign_fields = {}
-    
-    for key, data in foreign_fields.items():
-      try: 
-        model = data['model']
-        converted_foreign_fields[key] = model.objects.get(name=data['value'])
-        
-      except model.DoesNotExist:
-        # when an model object that matches the values does not exist
-        # if the required field is an error, the non-required field becomes a null value
-        if self.it_required(key):
-          raise exceptions.ValidationError(f'{key}에 {data["value"]}는 존재하지 않습니다.')
-        converted_foreign_fields[key] = None
+    try: 
+      foreign_object = model.objects.get(name=value)
+    except model.DoesNotExist:
+      # when an model object that matches the values does not exist
+      # if the required field is an error, the non-required field becomes a null value
+      if self.it_required(field):
+        raise exceptions.ValidationError(f'None of the {model} objects exist with name {value}')
+      return None
   
-    return converted_foreign_fields
+    return foreign_object
   
   def validate(self, data):
     """
     Get fields related to foreign keys from the data
     convert the foreign key to the appropriate object
     """
-    foreign_fields = {}
     data_fields = data.keys()
     
     for fields in Post._meta.get_fields():
       if type(fields) == models.ForeignKey and fields.name in data_fields:
-        foreign_fields[fields.name] = {'model': fields.related_model, 'value': data[fields.name]}
-        
-    converted_foreign_fields = self.convert_string_to_foreign_obj(**foreign_fields)
+        foreign_object = self.convert_string_to_foreign_obj(fields.related_model, fields.name, data[fields.name])
+        data[fields.name] = foreign_object
     
-    for key in converted_foreign_fields.keys():
-      data[key] = converted_foreign_fields[key]
-      
     return data
     
   def create(self, validated_data):

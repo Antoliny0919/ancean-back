@@ -172,11 +172,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
-# OAUTH_SECRETS = os.path.join(SECRETS_FOLDER, 'oauth-secrets.json')
-
-# with open(OAUTH_SECRETS) as f:
-#     oauth_secrets = json.loads(f.read())
-
 OAUTH_SECRETS_COLLECTION = get_secret(django_secrets, "OAUTH")
 
 # JWT Token 
@@ -228,9 +223,7 @@ SMTP_SECRETS_COLLECTION = get_secret(django_secrets, "SMTP")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
-# EMAIL_HOST_USER = get_secret(django_secrets, "EMAIL_HOST_USER")
 EMAIL_HOST_USER = SMTP_SECRETS_COLLECTION["EMAIL_HOST_USER"]
-# EMAIL_HOST_PASSWORD = get_secret(django_secrets, "EMAIL_HOST_PASSWORD")
 EMAIL_HOST_PASSWORD = SMTP_SECRETS_COLLECTION["EMAIL_HOST_PASSWORD"]
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

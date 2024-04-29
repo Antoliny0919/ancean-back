@@ -1,8 +1,8 @@
+import os
 import shutil
 import django_filters
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from django.core.cache import cache
 from rest_framework import status, viewsets, filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -30,6 +30,7 @@ class PostViewSet(viewsets.ModelViewSet):
     if request.auth:
       instance = self.get_object()
     # Anonymous User reqeust retrieve post, none check object_permission step
+    print(os.environ['PYTHON_VERSION'])
     instance = get_object_or_404(self.queryset, **self.kwargs)
     serializer = self.get_serializer(instance)
     
