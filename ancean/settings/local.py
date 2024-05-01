@@ -5,6 +5,8 @@ DEBUG = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+CORS_ALLOW_CREDENTIALS = True
+
 SERVER_URI = 'http://localhost:5050'
 
 DEFAULT_IMAGE_ROOT = f'{SERVER_URI}/media/ancean-no-header-image.png'

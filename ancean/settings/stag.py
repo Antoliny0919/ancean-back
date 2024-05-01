@@ -7,6 +7,8 @@ ALLOWED_HOSTS = ["*"]
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+CORS_ALLOW_CREDENTIALS = True
+
 POSTGRES_SECRETS_COLLECTION = get_secret(django_secrets, "POSTGRES")
 
 SERVER_URI = f'http://ancean.stag'
