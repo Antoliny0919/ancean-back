@@ -32,6 +32,3 @@ class CustomTokenViewBase(TokenViewBase):
 
 class CustomTokenObtainPairView(CustomTokenViewBase):
   _serializer_class = api_settings.TOKEN_OBTAIN_SERIALIZER
-
-class CustomTokenRefreshView(CustomTokenViewBase):
-  _serializer_class = api_settings.TOKEN_REFRESH_SERIALIZER
