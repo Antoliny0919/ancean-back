@@ -9,7 +9,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from posts.models import Post
 from .permissions import IsOwnerAndAdmin
 from .serializers import PostSerializer
-
 # Create your views here.
 
 class PostFilter(django_filters.FilterSet):
