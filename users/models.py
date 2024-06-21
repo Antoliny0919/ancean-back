@@ -56,6 +56,8 @@ class CustomUserManager(UserManager):
 class User(AbstractBaseUser, PermissionsMixin):
   
   objects = CustomUserManager()
+  
+  # profile_image = models.ImageField()
   email = models.EmailField(max_length=255, unique=True)
   name = models.CharField(max_length=20, unique=True)
   introduce = models.CharField(max_length=255, null=True)

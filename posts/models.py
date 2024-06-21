@@ -13,8 +13,8 @@ class Post(ExportModelOperationsMixin('post'), models.Model):
   title = models.CharField(max_length=100)
   introduce = models.TextField(default='')
   content = models.JSONField('json', null=True, blank=True)
-  author = models.ForeignKey(User, on_delete=models.CASCADE, db_column="author", related_name='author')
-  category = models.ForeignKey(Category, on_delete=models.SET_NULL, db_column="category", related_name='category', null=True, blank=True)
+  author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='author')
+  category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='category', null=True, blank=True)
   wave = models.IntegerField(default=0) # wave field like 'like post' on general SNS
   created_at = models.DateTimeField(null=True)
   updated_at = models.DateTimeField(auto_now=True)

@@ -23,6 +23,7 @@ def test_relate_client(client, status_code, body):
   response = package_http_request(client, 'post', body)
   assert response.status_code == status_code
 
+
 @pytest.mark.parametrize(
 "client, is_finish, post_count", 
 [
@@ -59,20 +60,22 @@ def test_relate_image_storage(client, body):
   post_image_storage = os.path.join(getattr(settings, 'MEDIA_ROOT'), f'{client.user.name}/{post_id}')
   assert os.path.exists(post_image_storage)
   
+  
 @pytest.mark.parametrize("client, foreign_value, status_code",
 [
-  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'category': 'NONE_EXIST_CATEGORY'}, status.HTTP_201_CREATED),
+  pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'category': 'NONE_EXIST_CATEGORY'}, status.HTTP_400_BAD_REQUEST),
   pytest.param({'user': TEST_ADMIN_USER_DATA, 'endpoint': '/api/posts/'}, {'author': 'NONE_EXIST_USER'}, status.HTTP_400_BAD_REQUEST)
 ], indirect=["client"])
 def test_relate_wrong_foreign_value(client, body, foreign_value, status_code):
   '''
-  test foreign keys when client have request invalid(non-existent) values
-  it the field is required, an error occurs, and the field that is not required is null
+  test foreign keys when client have request invalid(non-existent) values,
+  an error occurs and return 400 response
   '''
   body['author'] = client.user.name
   for key, value in foreign_value.items():
     body[key] = value
 
   response = package_http_request(client, 'post', body)
+  print(response.data)
   
   assert response.status_code == status_code

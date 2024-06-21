@@ -1,50 +1,21 @@
 import os
 from django.conf import settings
-from rest_framework import serializers, exceptions
-from django.db import models
+from rest_framework import serializers
 from .models import Post
+from users.models import User
+from category.models import Category
     
 class PostSerializer(serializers.ModelSerializer):
   
   header_image = serializers.CharField(required=False)
-  author = serializers.CharField()
-  category = serializers.CharField(required=False)
+  author = serializers.SlugRelatedField(slug_field="name", queryset=User.objects.all())
+  category = serializers.SlugRelatedField(slug_field="name", queryset=Category.objects.all(), required=False)
   
   class Meta:
     model = Post
     fields = '__all__'
-    
-  
-  def it_required(self, field):
-    field = self.__class__.get_fields(self)[field]
-    return field.required
-  
-  def convert_string_to_foreign_obj(self, model, field, value):
-    """
-    convert the foreign key to the appropriate object
-    """
-    try: 
-      foreign_object = model.objects.get(name=value)
-    except model.DoesNotExist:
-      # when an model object that matches the values does not exist
-      # if the required field is an error, the non-required field becomes a null value
-      if self.it_required(field):
-        raise exceptions.ValidationError(f'None of the {model} objects exist with name {value}')
-      return None
-  
-    return foreign_object
   
   def validate(self, data):
-    """
-    Get fields related to foreign keys from the data
-    convert the foreign key to the appropriate object
-    """
-    data_fields = data.keys()
-    
-    for fields in Post._meta.get_fields():
-      if type(fields) == models.ForeignKey and fields.name in data_fields:
-        foreign_object = self.convert_string_to_foreign_obj(fields.related_model, fields.name, data[fields.name])
-        data[fields.name] = foreign_object
     
     return data
     

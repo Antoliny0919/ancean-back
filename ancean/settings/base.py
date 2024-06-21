@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'authentication',
     'posts',
     'category',
+    'projects',
     'comment',
     'image',
 ]
